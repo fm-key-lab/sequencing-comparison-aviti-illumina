@@ -21,7 +21,7 @@ rule:
 
 checkpoint samplesheet:
     input:
-        'resources/raw_samplesheet.xlsx'
+        ancient('resources/raw_samplesheet.xlsx')
     output:
         'results/samplesheet.csv'
     localrule: True
