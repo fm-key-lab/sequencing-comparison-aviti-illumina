@@ -13,7 +13,17 @@ rule:
         python workflow/scripts/vcf2pseudogenome.py  -r {params.reference} -b {input} -o {output}
         '''
 
-    
+
+rule:
+    input:
+        'results/{species}/pseudogenomes/{sample}.fas',
+    output:
+        'results/{species}/{group}/pseudogenomes/{sample}.fas'
+    localrule: True
+    shell:
+        'cp {input} {output}'
+
+
 def align_pseudogenomes_input(wildcards):
     """Align samples from the same cohorts, species."""
     import pandas as pd
@@ -29,7 +39,7 @@ def align_pseudogenomes_input(wildcards):
     ]['sample'].astype(str)
 
     return expand(
-        'results/{{species}}/{{group}}/pseudogenomes/{sample}.tmp',
+        'results/{{species}}/{{group}}/pseudogenomes/{sample}.fas',
         sample=sample_ids
     )
 
