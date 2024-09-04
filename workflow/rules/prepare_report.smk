@@ -17,8 +17,10 @@ rule results_notebook:
         'report/figures/sequence_typing_table.tex',
     log:
         notebook='logs/notebooks/AVITI_Illumina_comparison.ipynb'
+    envmodules:
+        'sandbox/0.0.1-alpha'
     notebook:
-        'notebooks/AVITI_Illumina_comparison.ipynb'
+        '../notebooks/AVITI_Illumina_comparison.ipynb'
 
 
 rule create_report:
