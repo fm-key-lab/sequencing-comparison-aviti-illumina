@@ -8,15 +8,22 @@ FIGURES = [
 rule results_notebook:
     input:
         'results/results.duckdb'
+    params:
+        db='results/results.duckdb',
+        fdir='report/figures'
     output:
         expand(
-            'report/figures/{figure}.{ext}',
-            figure=FIGURES,
-            ext=['pdf', 'png']
+            multiext(
+                'report/figures/{figure}',
+                'pdf',
+                'png'
+            ),
+            figure=FIGURES
         ),
         'report/figures/sequence_typing_table.tex',
     log:
         notebook='logs/notebooks/AVITI_Illumina_comparison.ipynb'
+    localrule: True
     envmodules:
         'sandbox/0.0.1-alpha'
     notebook:
@@ -26,9 +33,12 @@ rule results_notebook:
 rule create_report:
     input:
         expand(
-            'report/figures/{figure}.{ext}',
-            figure=FIGURES,
-            ext=['pdf', 'png']
+            multiext(
+                'report/figures/{figure}',
+                'pdf',
+                'png'
+            ),
+            figure=FIGURES
         ),
         'report/figures/sequence_typing_table.tex',
     output:

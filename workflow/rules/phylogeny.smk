@@ -1,3 +1,15 @@
+rule:
+    output:
+        'workflow/scripts/vcf2pseudogenome.py'
+    params:
+        url=config['vcf2pseudogenome_script_url']
+    resources:
+        slurm_partition='datatransfer'
+    localrule: True
+    shell:
+        'wget -nc -O {output} {params.url}'
+
+
 use rule gubbins from widevariant as remove_recombination with:
     input:
         'results/{group}/{donor}/{species}/pseudogenomes/aligned_pseudogenomes.fas',
