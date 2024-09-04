@@ -12,13 +12,13 @@ rule results_notebook:
         db='results/results.duckdb',
         fdir='report/figures'
     output:
-        expand(
-            multiext(
+        multiext(
+            expand(
                 'report/figures/{figure}',
-                'pdf',
-                'png'
+                figure=FIGURES
             ),
-            figure=FIGURES
+            'pdf',
+            'png'
         ),
         'report/figures/sequence_typing_table.tex',
     log:
@@ -32,13 +32,13 @@ rule results_notebook:
 
 rule create_report:
     input:
-        expand(
-            multiext(
+        multiext(
+            expand(
                 'report/figures/{figure}',
-                'pdf',
-                'png'
+                figure=FIGURES
             ),
-            figure=FIGURES
+            'pdf',
+            'png'
         ),
         'report/figures/sequence_typing_table.tex',
     output:
