@@ -25,7 +25,7 @@ def align_pseudogenomes_input(wildcards):
     )
 
     sample_ids = mapping_samplesheet[
-        mapping_samplesheet['donor'] == wildcards.group
+        mapping_samplesheet['group'] == wildcards.group
     ]['sample'].astype(str)
 
     return expand(
