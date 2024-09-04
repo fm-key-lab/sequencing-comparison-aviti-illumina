@@ -2,7 +2,7 @@ rule vcf2pseudogenome:
     input:
         ancient('results/{species}/variants/{sample}.filtered.vcf.gz'),
     output:
-        'results/{species}/pseudogenomes/{sample}.fas',
+        'results/{species}/{group}/pseudogenomes/{sample}.fas',
     params:
         reference=lambda wildcards: config['reference'][wildcards.species],
     envmodules:
@@ -14,14 +14,14 @@ rule vcf2pseudogenome:
         '''
 
 
-rule:
-    input:
-        'results/{species}/pseudogenomes/{sample}.fas',
-    output:
-        'results/{species}/{group}/pseudogenomes/{sample}.fas'
-    localrule: True
-    shell:
-        'cp {input} {output}'
+# rule:
+#     input:
+#         'results/{species}/pseudogenomes/{sample}.fas',
+#     output:
+#         'results/{species}/{group}/pseudogenomes/{sample}.fas'
+#     localrule: True
+#     shell:
+#         'cp {input} {output}'
 
 
 def align_pseudogenomes_input(wildcards):
