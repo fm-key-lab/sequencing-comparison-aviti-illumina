@@ -12,14 +12,11 @@ rule results_notebook:
         db='results/results.duckdb',
         fdir='report/figures'
     output:
-        multiext(
-            expand(
-                'report/figures/{figure}',
-                figure=FIGURES
-            ),
-            'pdf',
-            'png'
-        ),
+        expand(
+            'report/figures/{figure}.{ext}',
+            figure=FIGURES,
+            ext=['pdf', 'png']
+        ), 
         'report/figures/sequence_typing_table.tex',
     log:
         notebook='logs/notebooks/AVITI_Illumina_comparison.ipynb'
@@ -32,14 +29,11 @@ rule results_notebook:
 
 rule create_report:
     input:
-        multiext(
-            expand(
-                'report/figures/{figure}',
-                figure=FIGURES
-            ),
-            'pdf',
-            'png'
-        ),
+        expand(
+            'report/figures/{figure}.{ext}',
+            figure=FIGURES,
+            ext=['pdf', 'png']
+        ), 
         'report/figures/sequence_typing_table.tex',
     output:
         'report/main.pdf'
