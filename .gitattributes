@@ -1,0 +1,3 @@
+*.smk linguist-language=Python
+Snakefile linguist-language=Python
+*.ipynb filter=ipynb_src
