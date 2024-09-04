@@ -3,5 +3,5 @@
 ## Usage
 
 ```bash
-$GROUP_HOME/tools/utility-scripts/pre_smk.sh seqcomp_dev2 ""
+$GROUP_HOME/tools/utility-scripts/pre_smk.sh "sequencing-comparison-aviti-illumina" " -n"
 ```
