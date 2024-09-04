@@ -16,7 +16,7 @@ module widevariant:
 include: 'rules/samplesheet.smk'
 include: 'rules/mapping.smk'
 include: 'rules/sequence_typing.smk'
-# include: 'rules/phylogeny.smk'
+include: 'rules/phylogeny.smk'
 include: 'rules/prepare_results.smk'
 include: 'rules/prepare_report.smk'
 
