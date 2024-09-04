@@ -1,0 +1,42 @@
+from snakemake.utils import min_version
+
+min_version('8.11')
+
+
+configfile: 'config/public_data.json'
+configfile: 'config/my_data.json'
+configfile: 'config/params.json'
+
+
+module widevariant:
+    snakefile: github('fm-key-lab/widevariant_module', path='workflow/Snakefile', tag='0.0.3-alpha')
+    config: config
+
+
+include: 'rules/samplesheet.smk'
+include: 'rules/mapping.smk'
+include: 'rules/sequence_typing.smk'
+# include: 'rules/phylogeny.smk'
+include: 'rules/prepare_results.smk'
+include: 'rules/prepare_report.smk'
+
+
+rule all:
+    input:
+        'report/main.pdf'
+    localrule: True
+    default_target: True
+
+
+onstart:
+    shell('mkdir -p logs results report')
+    shell('rm -f logs/*')
+    shell('rm -f .nextflow.log*')
+
+
+onsuccess:
+    shell(f'mkdir -p "/r/t/thosi/{config['run_id']}"')
+
+    # TODO: Should specify what's tranferred (e.g., leave `results/../work` from nf behind).
+    shell(f'rsync -au --progress report "/r/t/thosi/{config['run_id']}/"')
+    shell(f'rsync -au --progress --exclude "work" results "/r/t/thosi/{config['run_id']}/"')

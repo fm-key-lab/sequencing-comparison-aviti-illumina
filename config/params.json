@@ -1,0 +1,15 @@
+{
+  "wildcards": {
+    "donors": "B002",
+    "sequencing": "aviti|illumina",
+    "species_tmp": "Ecoli",
+    "species": "Escherichia coli"
+  },
+  "gubbins": {
+    "filter_percentage": "50",
+    "tree_args": " -mlnni 4",
+    "tree_builder": "fasttree"
+  },
+  "num_reads": 250000,
+  "run_id": "20240904_sequencing_comparison"
+}
