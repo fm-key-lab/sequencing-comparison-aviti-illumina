@@ -30,4 +30,9 @@ rule create_report:
         ),
         'report/figures/sequence_typing_table.tex',
     output:
-        touch('report/main.pdf')
+        'report/main.pdf'
+    localrule: True
+    envmodules:
+        'tinytex/2024.07.03'
+    shell:
+        'pdflatex -output-directory=report report/main.tex'

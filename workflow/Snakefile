@@ -29,7 +29,7 @@ rule all:
 
 
 onstart:
-    shell('mkdir -p logs results report')
+    shell('mkdir -p logs results')
     shell('rm -f logs/*')
     shell('rm -f .nextflow.log*')
 
