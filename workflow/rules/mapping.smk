@@ -32,6 +32,8 @@ use rule bactmap from widevariant as mapping with:
         outdir='results/{species}',
     output:
         'results/{species}/pipeline_info/pipeline_report.txt',
+        'results/{species}/multiqc/multiqc_data/multiqc_fastp.yaml',
+        'results/{species}/multiqc/multiqc_data/mqc_bcftools_stats_vqc_Count_SNP.yaml',
     localrule: True
     envmodules:
         'apptainer/1.3.2',
@@ -46,7 +48,9 @@ rule:
     resolved by downstream rules.
     """
     input:
-        'results/{species}/pipeline_info/pipeline_report.txt'
+        'results/{species}/pipeline_info/pipeline_report.txt',
+        'results/{species}/multiqc/multiqc_data/multiqc_fastp.yaml',
+        'results/{species}/multiqc/multiqc_data/mqc_bcftools_stats_vqc_Count_SNP.yaml',
     output:
         touch('results/{species}/fastp/{sample}_1.trim.fastq.gz'),
         touch('results/{species}/fastp/{sample}_2.trim.fastq.gz'),
