@@ -1,4 +1,4 @@
-rule:
+rule vcf2pseudogenome:
     input:
         ancient('results/{species}/variants/{sample}.filtered.vcf.gz'),
     output:
