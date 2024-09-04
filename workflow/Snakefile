@@ -23,7 +23,11 @@ include: 'rules/prepare_report.smk'
 
 rule all:
     input:
-        'report/main.pdf'
+        'report/main.pdf',
+        expand(
+            'results/{species}/phylogeny.done',
+            species=['Ecoli']
+        )
     localrule: True
     default_target: True
 
