@@ -11,6 +11,5 @@
     "tree_builder": "fasttree"
   },
   "num_reads": 250000,
-  "run_id": "20240904_sequencing_comparison",
-  "vcf2pseudogenome_script_url": "https://raw.githubusercontent.com/nf-core/bactmap/e83f8c5f0e7020d69649d5d2ad19f79e9b2302b7/bin/vcf2pseudogenome.py"
+  "run_id": "20240904_sequencing_comparison"
 }

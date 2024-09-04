@@ -1,25 +1,82 @@
 rule:
+    input:
+        ancient('results/{species}/variants/{sample}.filtered.vcf.gz'),
     output:
-        'workflow/scripts/vcf2pseudogenome.py'
+        'results/{species}/pseudogenomes/{sample}.fas',
     params:
-        url=config['vcf2pseudogenome_script_url']
-    resources:
-        slurm_partition='datatransfer'
+        reference=lambda wildcards: config['reference'][wildcards.species],
+    envmodules:
+        'sandbox'
     localrule: True
     shell:
-        'wget -nc -O {output} {params.url}'
+        '''
+        python workflow/scripts/vcf2pseudogenome.py  -r {params.reference} -b {input} -o {output}
+        '''
+
+    
+def align_pseudogenomes_input(wildcards):
+    """Align samples from the same cohorts, species."""
+    import pandas as pd
+
+    mapping_samplesheet = pd.read_csv(
+        checkpoints.mapping_samplesheet.get(
+            species=wildcards.species,
+        ).output[0]
+    )
+
+    sample_ids = mapping_samplesheet[
+        mapping_samplesheet['donor'] == wildcards.group
+    ]['sample'].astype(str)
+
+    return expand(
+        'results/{{species}}/{{group}}/pseudogenomes/{sample}.tmp',
+        sample=sample_ids
+    )
+
+
+rule align_pseudogenomes:
+    input:
+        align_pseudogenomes_input
+    output:
+        aligned='results/{species}/{group}/aligned_pseudogenomes/aligned_pseudogenome.fas',
+        final_ref='results/{species}/{group}/aligned_pseudogenomes/final_reference.fas',
+    params:
+        reference=lambda wildcards: config['reference'][wildcards.species],
+    envmodules:
+        'sandbox'
+    localrule: True
+    shell:
+        '''
+        touch {output.aligned}
+        for pseudogenome in {input}
+        do
+            cat $pseudogenome >> {output.aligned}
+        done
+        python workflow/scripts/reference2single_sequence.py -r {params.reference} -o {output.final_ref}
+        cat {output.final_ref} >> {output.aligned}
+        '''
 
 
 use rule gubbins from widevariant as remove_recombination with:
     input:
-        'results/{group}/{donor}/{species}/pseudogenomes/aligned_pseudogenomes.fas',
+        'results/{species}/{group}/aligned_pseudogenomes/aligned_pseudogenome.fas',
     params:
         f=config['gubbins']['filter_percentage'],
         tree_args=config['gubbins']['tree_args'],
         t=config['gubbins']['tree_builder']
     output:
-        'results/{group}/{donor}/{species}/gubbins/prefix.final_tree.tre',
+        'results/{species}/{group}/gubbins/prefix.final_tree.tre',
     envmodules:
         'intel/21.2.0',
         'impi/2021.2',
         'gubbins/3.3.5'
+
+
+rule:
+    input:
+        expand(
+            'results/{{species}}/{group}/gubbins/prefix.final_tree.tre',
+            group=['aviti', 'illumina'],
+        )
+    output:
+        touch('results/{species}/phylogeny.done')

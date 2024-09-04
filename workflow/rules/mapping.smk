@@ -48,10 +48,12 @@ rule:
     resolved by downstream rules.
     """
     input:
-        'results/{species}/pipeline_info/pipeline_report.txt',
-        'results/{species}/multiqc/multiqc_data/multiqc_fastp.yaml',
-        'results/{species}/multiqc/multiqc_data/mqc_bcftools_stats_vqc_Count_SNP.yaml',
+        ancient('results/{species}/pipeline_info/pipeline_report.txt'),
+        ancient('results/{species}/multiqc/multiqc_data/multiqc_fastp.yaml'),
+        ancient('results/{species}/multiqc/multiqc_data/mqc_bcftools_stats_vqc_Count_SNP.yaml'),
     output:
         touch('results/{species}/fastp/{sample}_1.trim.fastq.gz'),
         touch('results/{species}/fastp/{sample}_2.trim.fastq.gz'),
+        touch('results/{species}/variants/{sample}.filtered.vcf.gz'),
+        # touch('results/{species}/pseudogenomes/{sample}.fas'),
     localrule: True
