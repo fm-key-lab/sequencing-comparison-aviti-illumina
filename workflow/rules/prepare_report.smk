@@ -10,7 +10,7 @@ rule results_notebook:
         'results/results.duckdb'
     params:
         db='results/results.duckdb',
-        fdir='report/figures'
+        output='report/figures'
     output:
         expand(
             'report/figures/{figure}.{ext}',
