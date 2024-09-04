@@ -40,3 +40,6 @@ onsuccess:
     # TODO: Should specify what's tranferred (e.g., leave `results/../work` from nf behind).
     shell(f'rsync -au --progress report "/r/t/thosi/{config['run_id']}/"')
     shell(f'rsync -au --progress --exclude "work" results "/r/t/thosi/{config['run_id']}/"')
+    
+    # Clean up compiled report
+    shell('rm -f report/main.pdf')
