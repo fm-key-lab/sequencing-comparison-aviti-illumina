@@ -18,14 +18,14 @@ def align_pseudogenomes_input(wildcards):
     """Align samples from the same cohorts, species."""
     import pandas as pd
 
-    mapping_samplesheet = pd.read_csv(
-        checkpoints.mapping_samplesheet.get(
+    samplesheet = pd.read_csv(
+        checkpoints.samplesheet.get(
             species=wildcards.species,
         ).output[0]
     )
 
-    sample_ids = mapping_samplesheet[
-        mapping_samplesheet['group'] == wildcards.group
+    sample_ids = samplesheet[
+        samplesheet['group'] == wildcards.group
     ]['sample'].astype(str)
 
     return expand(
