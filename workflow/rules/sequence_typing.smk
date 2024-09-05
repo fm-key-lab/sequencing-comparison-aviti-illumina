@@ -5,8 +5,8 @@ use rule srst2 from widevariant as sequence_typing with:
             '_1.trim.fastq.gz',
             '_2.trim.fastq.gz',
         ),
-        db=lambda wildcards: config['mlst'][wildcards.species]['db'],
-        prof=lambda wildcards: config['mlst'][wildcards.species]['definitions'],
+        db=lambda wildcards: config['public_data']['mlst'][wildcards.species]['db'],
+        prof=lambda wildcards: config['public_data']['mlst'][wildcards.species]['definitions'],
     params:
         extra='--forward "_1.trim" --reverse "_2.trim" --mlst_delimiter "_"',
         species_alias=lambda wildcards: mlst_key[wildcards.species],

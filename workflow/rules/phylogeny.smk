@@ -25,7 +25,7 @@ rule align_pseudogenomes:
         aligned='results/{species}/{group}/aligned_pseudogenomes/aligned_pseudogenome.fas',
         final_ref='results/{species}/{group}/aligned_pseudogenomes/final_reference.fas',
     params:
-        reference=lambda wildcards: config['reference'][wildcards.species],
+        reference=lambda wildcards: config['public_data']['reference'][wildcards.species],
     envmodules:
         'sandbox'
     shell:
