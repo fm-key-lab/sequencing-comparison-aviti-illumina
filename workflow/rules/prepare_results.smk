@@ -32,7 +32,7 @@ rule record_total_reads:
     input:
         expand(
             'results/{species}/multiqc/multiqc_data/multiqc_fastp.yaml',
-            species=all_species
+            species=config['wildcards']['species_tmp'].split('|')
         )
     output:
         temp('results/total_reads.duckdb'),
@@ -54,7 +54,7 @@ rule record_variant_quality_scores:
     input:
         expand(
             'results/{species}/multiqc/multiqc_data/mqc_bcftools_stats_vqc_Count_SNP.yaml',
-            species=all_species
+            species=config['wildcards']['species_tmp'].split('|')
         )
     output:
         temp('results/variant_quality_scores.duckdb'),
@@ -76,7 +76,7 @@ rule record_sequence_typing_results:
     input:
         expand(
             'results/{species}/mlst/.done',
-            species=all_species
+            species=config['wildcards']['species_tmp'].split('|')
         )
     params:
         mlst_glob='results/*/mlst/*[0-9][!a-zA-Z]__results.txt',

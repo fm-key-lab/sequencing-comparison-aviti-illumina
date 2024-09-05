@@ -23,15 +23,12 @@ include: 'rules/prepare_results.smk'
 include: 'rules/prepare_report.smk'
 
 
-all_species = config['wildcards']['species_tmp'].split('|')
-
-
 rule all:
     input:
         'report/main.pdf',
         expand(
             'results/{species}/phylogeny.done',
-            species=all_species
+            species=config['wildcards']['species_tmp'].split('|')
         )
     localrule: True
     default_target: True
