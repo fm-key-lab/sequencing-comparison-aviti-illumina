@@ -3,11 +3,7 @@ from snakemake.utils import min_version
 min_version('8.11')
 
 
-import os
-
-public_data_cfg = os.environ['GROUP_HOME'] + '/config/public_data.json'
-
-configfile: public_data_cfg
+configfile: '/nexus/posix0/MPIIB-keylab/config/public_data.json'
 configfile: 'config/my_data.json'
 configfile: 'config/params.json'
 
