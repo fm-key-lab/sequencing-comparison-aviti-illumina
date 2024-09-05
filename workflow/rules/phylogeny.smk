@@ -55,7 +55,28 @@ rule align_pseudogenomes:
         '''
 
 
-use rule gubbins from widevariant as remove_recombination with:
+# use rule gubbins from widevariant as remove_recombination with:
+#     input:
+#         'results/{species}/{group}/aligned_pseudogenomes/aligned_pseudogenome.fas',
+#     params:
+#         f=config['gubbins']['filter_percentage'],
+#         tree_args=config['gubbins']['tree_args'],
+#         t=config['gubbins']['tree_builder']
+#     output:
+#         'results/{species}/{group}/gubbins/prefix.final_tree.tre',
+#     envmodules:
+#         'intel/21.2.0',
+#         'impi/2021.2',
+#         'gubbins/3.3.5'
+
+
+rule gubbins:
+    """Remove recombination and build phylogeny using gubbins.
+
+    Notes
+        - Gubbins uses leading period for output filenames, ie `str(input_args.prefix) + ".final_tree.tre"`
+          See https://github.com/nickjcroucher/gubbins/blob/15a0c3ecf4fa9dbc5551dd47563cfccfca4bdf7a/python/gubbins/common.py#L1374-L1388
+    """
     input:
         'results/{species}/{group}/aligned_pseudogenomes/aligned_pseudogenome.fas',
     params:
@@ -64,10 +85,34 @@ use rule gubbins from widevariant as remove_recombination with:
         t=config['gubbins']['tree_builder']
     output:
         'results/{species}/{group}/gubbins/prefix.final_tree.tre',
+    resources:
+        nodes=1,
+        runtime=480,
+        cpus_per_task=32,
+        mem_mb=16000
     envmodules:
         'intel/21.2.0',
         'impi/2021.2',
         'gubbins/3.3.5'
+    shell:
+        '''
+        export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+        export OMP_PLACES=threads
+
+        OUTPUT_DIR=$(dirname {output})
+        PREFIX=$OUTPUT_DIR/prefix
+
+        # gubbins creates many intermediate files in launch dir
+        cd $OUTPUT_DIR && \
+
+        run_gubbins.py \
+          --prefix $PREFIX \
+          --threads $SLURM_CPUS_PER_TASK \
+          --tree-args "{params.tree_args}" \
+          --filter-percentage {params.f} \
+          --tree-builder {params.t} \
+          {input}
+        '''
 
 
 rule:
