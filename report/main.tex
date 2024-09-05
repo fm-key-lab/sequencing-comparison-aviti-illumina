@@ -2,7 +2,7 @@
 \renewcommand{\familydefault}{\sfdefault}
 
 \usepackage{booktabs}
-% \usepackage{fontawesome5}
+\usepackage{float}
 \usepackage{geometry}
 \usepackage{graphicx}
 \usepackage{listings}
@@ -28,16 +28,15 @@
     keepspaces=true,
     numbers=none,
     showstringspaces=false,
-    xrightmargin=.05\textwidth,
-    xleftmargin=.05\textwidth,
+    xrightmargin=2em,
+    xleftmargin=2em,
 }
 
-\definecolor{cite-color}{RGB}{206,34,120} % magenta
-\definecolor{link-color}{RGB}{28,172,184} % turquoise (darker)
-\definecolor{file-color}{RGB}{124,195,3} % lime green (darker)
-\definecolor{url-color}{RGB}{102,35,175} % purple
+\definecolor{cite-color}{RGB}{206,34,120}
+\definecolor{link-color}{RGB}{28,172,184}
+\definecolor{file-color}{RGB}{124,195,3}
+\definecolor{url-color}{RGB}{102,35,175}
 
-% Stylize hyperlinks
 \AtBeginDocument{
 	\hypersetup{
 	    citecolor=link-color,
@@ -55,31 +54,88 @@
 
 \maketitle
 
-We performed sequencing experiments on identical samples from the same donor (Baby 2, \texttt{B002}). In one experiment, Illumina was used; in the other, AVITI.
+We performed two sequencing experiments on a library prepared from a pool of samples. In one experiment, Illumina sequencing was used; in the other, AVITI.
+To compare results, we restrict our analysis to \textit{E. coli} samples from a single donor (Baby 2, \texttt{B002}).
 
-\section{Sequencing quality}
+\section{Number of reads}
 
-\section{Variant calling}
+We used \texttt{fastp} to trim, filter, and tally reads with pseudocode:
+
+\begin{lstlisting}[language=bash]
+$ fastp {input FASTQs} \ 
+  --cut_front \
+  --cut_tail \
+  --trim_poly_x \
+  --cut_mean_quality 30 \ 
+  --qualified_quality_phred 30 \
+  --unqualified_percent_limit 10 \
+  --length_required 50
+\end{lstlisting}
+    
+Results were collected using MultiQC and parsed using custom code.
+
+\textbf{Results}
+
+\begin{itemize}
+    \item \textcolor{red}{AVITI} has $\sim 10^9$ reads, even after filtering (\cref{figure:reads})
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.45\textwidth]{figures/total_reads.pdf}
+    \caption{
+        \textbf{Total number of reads} for \textcolor{red}{AVITI} or \textcolor{blue}{Illumina}, before and after filtering with \texttt{fastp}.
+    }
+    \label{figure:reads}
+\end{figure}
+
+\section{Variant quality scores}
+
+We used \texttt{bcftools} to generate pile-ups and \texttt{bcftools stats} to extract variant quality scores with pseudocode:
+
+\begin{lstlisting}[language=bash]
+$ bcftools mpileup --fasta-ref {reference} --min-BQ 20 {bam} \
+    | bcftools call --output-type v --ploidy 1 --multiallelic-caller \
+    | bcftools reheader --samples sample_name.list \
+    | bcftools view --output-file {prefix}.vcf.gz --output-type z
+$ tabix -p vcf -f {prefix}.vcf.gz
+$ bcftools stats {prefix}.vcf.gz > {prefix}.bcftools_stats.txt
+\end{lstlisting}
+    
+Results were collected using MultiQC and parsed using custom code.
+
+\textbf{Results}
+
+\begin{itemize}
+    \item \textcolor{red}{AVITI} has slightly higher, though comparable, variant quality scores compared with \textcolor{blue}{Illumina} (\cref{figure:variants})
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.45\textwidth]{figures/variant_quality_scores.pdf}
+    \caption{
+        \textbf{Variant quality scores} for \textcolor{red}{AVITI} or \textcolor{blue}{Illumina}.
+    }
+    \label{figure:variants}
+\end{figure}
 
 \section{Sequence typing}
 
-We used software \texttt{srst2} to perform sequence typing for E. coli (MLST database name \texttt{Escherichia coli\#1}) with CLI pseudocode:
+We used \texttt{srst2} to perform sequence typing for E. coli (MLST database name \texttt{Escherichia coli\#1}) with pseudocode:
 
 \begin{lstlisting}[language=bash]
-$ module load srst2/0.2.0
 $ srst2 --input_pe {trimmed reads} --mlst_* '{Escherichia_coli#1}'
 \end{lstlisting}
 
-We found that:
+\textbf{Results}
 
 \begin{itemize}
-    \item \texttt{(ST)73} is the dominant sequence type (\cref{figure:st})
-    \item \textcolor{red}{AVITI} (\textcolor{red}{$\diamond$}) has higher seq. depth at core genes used for sequence typing than \textcolor{blue}{Illumina} (\textcolor{blue}{$\bullet$}) (\cref{figure:st})
     \item $\frac{250}{256} \approx 98\%$ agreement between \textcolor{red}{AVITI} and \textcolor{blue}{Illumina} (\cref{tab:st})
-    \item Results are nearly identical between technologies
+    \item \textcolor{red}{AVITI} (\textcolor{red}{$\diamond$}) has higher seq. depth at core genes used for sequence typing than \textcolor{blue}{Illumina} (\textcolor{blue}{$\bullet$}) (\cref{figure:st})
+    \item \texttt{(ST)73} is the dominant sequence type (\cref{figure:st})
 \end{itemize}
 
-\begin{figure}[!h]
+\begin{figure}[H]
     \centering
     \includegraphics[width=.95\textwidth]{figures/sequence_typing.pdf}
     \caption{
@@ -89,7 +145,7 @@ We found that:
     \label{figure:st}
 \end{figure}
 
-\begin{table}[h]
+\begin{table}[H]
     \centering
     \input{figures/sequence_typing_table.tex}
     \caption{
