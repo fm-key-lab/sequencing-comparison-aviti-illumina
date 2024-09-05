@@ -119,10 +119,8 @@ rule:
           duckdb -s "\
           set memory_limit = '$(({resources.mem_mb} / 1000))GB';
           set threads = {resources.cpus_per_task};
-
           attach '{output}' as results_db;
           attach '${{db}}' as output_db;
-          
           copy from database output_db to results_db;"
         done
         '''

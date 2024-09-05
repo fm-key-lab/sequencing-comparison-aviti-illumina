@@ -23,7 +23,7 @@ rule align_pseudogenomes:
         pseudogenomes_input
     output:
         aligned='results/{species}/{group}/aligned_pseudogenomes/aligned_pseudogenome.fas',
-        final_ref='results/{species}/{group}/aligned_pseudogenomes/final_reference.fas',
+        reference_single_sequence='results/{species}/{group}/aligned_pseudogenomes/final_reference.fas',
     params:
         reference=lambda wildcards: config['public_data']['reference'][wildcards.species],
     envmodules:
@@ -35,8 +35,10 @@ rule align_pseudogenomes:
         do
             cat $pseudogenome >> {output.aligned}
         done
-        python workflow/scripts/reference2single_sequence.py -r {params.reference} -o {output.final_ref}
-        cat {output.final_ref} >> {output.aligned}
+        python workflow/scripts/reference2single_sequence.py \
+          -r {params.reference} \
+          -o {output.reference_single_sequence}
+        cat {output.reference_single_sequence} >> {output.aligned}
         '''
 
 
