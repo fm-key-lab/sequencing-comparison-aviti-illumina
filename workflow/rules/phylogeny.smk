@@ -97,8 +97,8 @@ rule gubbins:
         'gubbins/3.3.5'
     shell:
         '''
-        export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-        export OMP_PLACES=threads
+        export OMP_NUM_THREADS=2
+        # export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
         OUTPUT_DIR=$(dirname {output})
         PREFIX=$OUTPUT_DIR/prefix
