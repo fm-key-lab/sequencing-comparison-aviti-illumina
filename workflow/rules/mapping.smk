@@ -54,6 +54,5 @@ rule:
     output:
         touch('results/{species}/fastp/{sample}_1.trim.fastq.gz'),
         touch('results/{species}/fastp/{sample}_2.trim.fastq.gz'),
-        touch('results/{species}/variants/{sample}.filtered.vcf.gz'),
-        # touch('results/{species}/pseudogenomes/{sample}.fas'),
+        touch('results/{species}/pseudogenomes/{sample}.fas'),
     localrule: True
