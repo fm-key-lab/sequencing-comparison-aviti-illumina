@@ -108,7 +108,7 @@ rule gubbins:
 
         run_gubbins.py \
           --prefix $PREFIX \
-          --threads $SLURM_CPUS_PER_TASK \
+          --threads 2 \
           --tree-args "{params.tree_args}" \
           --filter-percentage {params.f} \
           --tree-builder {params.t} \
