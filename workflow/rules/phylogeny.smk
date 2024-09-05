@@ -100,6 +100,9 @@ rule gubbins:
         export OMP_NUM_THREADS=2
         # export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
+        echo "$(pwd)"
+
+        INPUT=$(realpath {input})
         OUTPUT_DIR=$(dirname {output})
         PREFIX=$OUTPUT_DIR/prefix
 
@@ -112,7 +115,7 @@ rule gubbins:
           --tree-args "{params.tree_args}" \
           --filter-percentage {params.f} \
           --tree-builder {params.t} \
-          {input}
+          $INPUT
         '''
 
 
