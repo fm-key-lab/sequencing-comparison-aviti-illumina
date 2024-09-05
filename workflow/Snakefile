@@ -1,15 +1,17 @@
+import os
+
 from snakemake.utils import min_version
 
 min_version('8.11')
 
 
-configfile: 'config/public_data.json'
+configfile: os.environ["GROUP_HOME"] + '/config/public_data.json'
 configfile: 'config/my_data.json'
 configfile: 'config/params.json'
 
 
 module widevariant:
-    snakefile: github('fm-key-lab/widevariant_module', path='workflow/Snakefile', tag='0.0.3-alpha')
+    snakefile: github('fm-key-lab/widevariant_module', path='workflow/Snakefile', tag='0.0.4-alpha')
     config: config
 
 
@@ -21,12 +23,15 @@ include: 'rules/prepare_results.smk'
 include: 'rules/prepare_report.smk'
 
 
+all_species = config['wildcards']['species_tmp'].split('|')
+
+
 rule all:
     input:
         'report/main.pdf',
         expand(
             'results/{species}/phylogeny.done',
-            species=['Ecoli']
+            species=all_species
         )
     localrule: True
     default_target: True
