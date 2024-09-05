@@ -90,6 +90,7 @@ rule gubbins:
         runtime=480,
         cpus_per_task=32,
         mem_mb=16000
+    localrule: True
     envmodules:
         'intel/21.2.0',
         'impi/2021.2',
@@ -123,3 +124,4 @@ rule:
         )
     output:
         touch('results/{species}/phylogeny.done')
+    localrule: True
