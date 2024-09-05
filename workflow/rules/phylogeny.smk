@@ -90,17 +90,13 @@ rule gubbins:
         runtime=480,
         cpus_per_task=32,
         mem_mb=16000
-    localrule: True
     envmodules:
         'intel/21.2.0',
         'impi/2021.2',
         'gubbins/3.3.5'
     shell:
         '''
-        export OMP_NUM_THREADS=2
-        # export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-
-        echo "$(pwd)"
+        export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
         INPUT=$(realpath {input})
         OUTPUT_DIR=$(dirname {output})
@@ -111,7 +107,7 @@ rule gubbins:
 
         run_gubbins.py \
           --prefix $PREFIX \
-          --threads 2 \
+          --threads $SLURM_CPUS_PER_TASK \
           --tree-args "{params.tree_args}" \
           --filter-percentage {params.f} \
           --tree-builder {params.t} \

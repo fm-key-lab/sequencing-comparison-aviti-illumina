@@ -6,7 +6,7 @@
     "species": "Escherichia coli"
   },
   "gubbins": {
-    "filter_percentage": "50",
+    "filter_percentage": "100",
     "tree_args": " -mlnni 4",
     "tree_builder": "fasttree"
   },
