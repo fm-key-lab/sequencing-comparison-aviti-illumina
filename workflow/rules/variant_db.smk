@@ -74,7 +74,7 @@ def variant_stats_output(wildcards):
             'results/{{species}}/candidate_variant_table/allele_freq/{sample}.tsv',
         ],
         # sample=sample_ids,
-        sample=list(range(600,620)),
+        sample=list(range(600, 630)),
     )
 
 
@@ -89,9 +89,13 @@ rule:
     output:
         'results/candidate_variant_table/{species}.duckdb',
     resources:
-        cpus_per_task=32,
-        mem_mb=64_000,
-        runtime=120
+        cpus_per_task=8,
+        mem_mb=4_000,
+        runtime=30
+    # resources:
+    #     cpus_per_task=32,
+    #     mem_mb=64_000,
+    #     runtime=120
     localrule: False
     envmodules:
         'duckdb/nightly'
