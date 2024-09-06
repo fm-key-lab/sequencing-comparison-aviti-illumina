@@ -49,16 +49,28 @@ rule:
         '''
 
 
+def variant_stats_output(wildcards):
+    import pandas as pd
+
+    checkpoint_output = checkpoints.mapping_samplesheet.get(
+        species=wildcards.species,
+    ).output[0]
+
+    sample_ids = pd.read_csv(checkpoint_output)['sample'].astype(str)
+
+    return expand(
+        [
+            'results/{{species}}/candidate_variant_table/base_freq/{sample}.csv',
+            'results/{{species}}/candidate_variant_table/coverage/{sample}.tsv',
+            'results/{{species}}/candidate_variant_table/allele_freq/{sample}.tsv',
+        ],
+        sample=sample_ids,
+    )
+
+
 rule:
     input:
-        expand(
-            [
-                'results/{{species}}/candidate_variant_table/base_freq/{sample}.csv',
-                'results/{{species}}/candidate_variant_table/coverage/{sample}.tsv',
-                'results/{{species}}/candidate_variant_table/allele_freq/{sample}.tsv',
-            ],
-            sample=list(range(600, 620)),
-        )
+        variant_stats_output
     params:
         # NOTE: Pretty sure nested quotes required here for DuckDB
         base_freq_glob="'results/{species}/candidate_variant_table/base_freq/*.csv'",
@@ -67,8 +79,9 @@ rule:
     output:
         'results/candidate_variant_table/{species}.duckdb',
     resources:
-        cpus_per_task=16,
-        mem_mb=16_000
+        cpus_per_task=32,
+        mem_mb=64_000,
+        runtime=120
     localrule: False
     envmodules:
         'duckdb/nightly'

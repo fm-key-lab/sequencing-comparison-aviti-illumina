@@ -27,11 +27,6 @@ include: 'rules/prepare_report.smk'
 rule all:
     input:
         expand('results/candidate_variant_table/{species}.duckdb', species=['Ecoli'])
-        # 'report/main.pdf',
-        # expand(
-        #     'results/{species}/phylogeny.done',
-        #     species=config['wildcards']['species_tmp'].split('|')
-        # )
     localrule: True
     default_target: True
 
