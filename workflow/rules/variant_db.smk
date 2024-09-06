@@ -69,7 +69,7 @@ rule:
     resources:
         cpus_per_task=16,
         mem_mb=16_000
-    localrule: True
+    localrule: False
     envmodules:
         'duckdb/nightly'
     shell:
