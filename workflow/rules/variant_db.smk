@@ -3,7 +3,7 @@ rule:
         ancient('results/{species}/fastp/{sample}.fastp.json')
     output:
         'results/{species}/candidate_variant_table/base_freq/{sample}.csv'
-    localrule: True
+    localrule: False
     envmodules:
         'yq/4.44.3'
     shell:
@@ -23,7 +23,7 @@ rule:
         ancient('results/{species}/samtools/{sample}.sorted.bam')
     output:
         'results/{species}/candidate_variant_table/coverage/{sample}.tsv'
-    localrule: True
+    localrule: False
     envmodules:
         'bedtools/2.31.1'
     shell:
@@ -40,7 +40,7 @@ rule:
         ancient('results/{species}/variants/{sample}.vcf.gz')
     output:
         'results/{species}/candidate_variant_table/allele_freq/{sample}.tsv'
-    localrule: True
+    localrule: False
     envmodules:
         'bcftools/1.20'
     shell:
