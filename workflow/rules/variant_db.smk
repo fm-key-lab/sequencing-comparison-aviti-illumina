@@ -1,6 +1,6 @@
 rule:
     input:
-        'results/{species}/fastp/{sample}.fastp.json'
+        ancient('results/{species}/fastp/{sample}.fastp.json')
     output:
         'results/{species}/candidate_variant_table/base_freq/{sample}.csv'
     localrule: True
@@ -20,7 +20,7 @@ rule:
 
 rule:
     input:
-        'results/{species}/samtools/{sample}.sorted.bam'
+        ancient('results/{species}/samtools/{sample}.sorted.bam')
     output:
         'results/{species}/candidate_variant_table/coverage/{sample}.tsv'
     localrule: True
@@ -37,7 +37,7 @@ rule:
 
 rule:
     input:
-        'results/{species}/variants/{sample}.vcf.gz'
+        ancient('results/{species}/variants/{sample}.vcf.gz')
     output:
         'results/{species}/candidate_variant_table/allele_freq/{sample}.tsv'
     localrule: True

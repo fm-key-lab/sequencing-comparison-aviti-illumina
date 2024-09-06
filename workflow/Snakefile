@@ -15,13 +15,13 @@ module widevariant:
     config: config
 
 
-include: 'rules/samplesheet.smk'
-include: 'rules/mapping.smk'
+# include: 'rules/samplesheet.smk'
+# include: 'rules/mapping.smk'
 include: 'rules/variant_db.smk'
-include: 'rules/sequence_typing.smk'
-include: 'rules/phylogeny.smk'
-include: 'rules/prepare_results.smk'
-include: 'rules/prepare_report.smk'
+# include: 'rules/sequence_typing.smk'
+# include: 'rules/phylogeny.smk'
+# include: 'rules/prepare_results.smk'
+# include: 'rules/prepare_report.smk'
 
 
 rule all:
