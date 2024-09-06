@@ -53,9 +53,9 @@ rule:
     input:
         expand(
             [
-                'results/{species}/candidate_variant_table/base_freq/{sample}.csv',
-                'results/{species}/candidate_variant_table/coverage/{sample}.tsv',
-                'results/{species}/candidate_variant_table/allele_freq/{sample}.tsv',
+                'results/{{species}}/candidate_variant_table/base_freq/{sample}.csv',
+                'results/{{species}}/candidate_variant_table/coverage/{sample}.tsv',
+                'results/{{species}}/candidate_variant_table/allele_freq/{sample}.tsv',
             ],
             sample=list(range(600, 620)),
         )
