@@ -57,9 +57,26 @@ rule:
                 'results/{species}/candidate_variant_table/coverage/{sample}.tsv',
                 'results/{species}/candidate_variant_table/allele_freq/{sample}.tsv',
             ],
-            species=['Ecoli'],
             sample=list(range(600, 620)),
         )
+    params:
+        # NOTE: Pretty sure nested quotes required here for DuckDB
+        base_freq_glob="'results/{species}/candidate_variant_table/base_freq/*.csv'",
+        coverage_glob="'results/{species}/candidate_variant_table/coverage/*.tsv'",
+        allele_freq_glob="'results/{species}/candidate_variant_table/allele_freq/*.tsv'",
     output:
-        touch('results/cmt_dev.done')
+        'results/candidate_variant_table/{species}.duckdb',
+    resources:
+        cpus_per_task=16,
+        mem_mb=16_000
     localrule: True
+    envmodules:
+        'duckdb/nightly'
+    shell:
+        '''
+        export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB"
+        export BASE_FREQ={params.base_freq_glob}
+        export COVERAGE={params.coverage_glob}
+        export ALLELE_FREQ={params.allele_freq_glob}
+        duckdb {output} -c ".read workflow/scripts/create_candidate_variant_tbls.sql"
+        '''
