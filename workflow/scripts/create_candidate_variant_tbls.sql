@@ -12,11 +12,11 @@ from read_csv(
 	delim = ',',
 	columns = {
 		'avg_perc': 'double',
-		'sample': 'bigint',
 		'read_pe': 'bigint',
 		'base': 'varchar'
 	},
-	auto_detect = false
+	auto_detect = false,
+	filename = true
 );
 
 -- Coverage
