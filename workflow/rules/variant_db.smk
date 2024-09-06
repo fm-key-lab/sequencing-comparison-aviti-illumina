@@ -3,6 +3,9 @@ rule:
         ancient('results/{species}/fastp/{sample}.fastp.json')
     output:
         'results/{species}/candidate_variant_table/base_freq/{sample}.csv'
+    resources:
+        cpus_per_task=2,
+        runtime=5
     localrule: False
     envmodules:
         'yq/4.44.3'
@@ -23,6 +26,9 @@ rule:
         ancient('results/{species}/samtools/{sample}.sorted.bam')
     output:
         'results/{species}/candidate_variant_table/coverage/{sample}.tsv'
+    resources:
+        cpus_per_task=2,
+        runtime=5
     localrule: False
     envmodules:
         'bedtools/2.31.1'
@@ -40,6 +46,9 @@ rule:
         ancient('results/{species}/variants/{sample}.vcf.gz')
     output:
         'results/{species}/candidate_variant_table/allele_freq/{sample}.tsv'
+    resources:
+        cpus_per_task=2,
+        runtime=5
     localrule: False
     envmodules:
         'bcftools/1.20'
@@ -64,7 +73,8 @@ def variant_stats_output(wildcards):
             'results/{{species}}/candidate_variant_table/coverage/{sample}.tsv',
             'results/{{species}}/candidate_variant_table/allele_freq/{sample}.tsv',
         ],
-        sample=sample_ids,
+        # sample=sample_ids,
+        sample=list(range(600,620)),
     )
 
 
