@@ -1,4 +1,4 @@
-executor: local
+executor: slurm
 jobs: 1
 latency-wait: 5
 slurm-init-seconds-before-status-checks: 5
