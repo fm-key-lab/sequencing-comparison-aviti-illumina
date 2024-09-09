@@ -15,8 +15,7 @@ rule:
         for orient in 1 2; do
           for base in A C T G N; do
             query=".read${{orient}}_before_filtering.content_curves.${{base}}"
-            yq -o=csv $query {input} | \
-            awk -F',' -v orient=$orient -v base=$base '{{sum=0; for(i=1;i<=NF;i++) sum+=$i; avg=sum/NF; print avg","orient","base}}' >> {output}
+            yq -o=csv $query {input} | awk -F',' -v orient=$orient -v base=$base '{{sum=0; for(i=1;i<=NF;i++) sum+=$i; avg=sum/NF; print avg","orient","base}}' >> {output}
           done
         done
         '''
