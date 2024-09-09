@@ -36,8 +36,7 @@ rule:
         '''
         touch {output}
         for strand in "+" "-"; do
-          genomeCoverageBed -bg -strand $strand -ibam {input} | \
-          awk -v strand=$strand '{{print $0, strand}}' OFS='\t' >> {output}
+          genomeCoverageBed -bg -strand $strand -ibam {input} | awk -v strand=$strand '{{print $0, strand}}' OFS='\t' >> {output}
         done
         '''
 
