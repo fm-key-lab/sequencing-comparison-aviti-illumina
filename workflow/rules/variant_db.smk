@@ -82,7 +82,7 @@ def variant_stats_output(wildcards):
 
 rule:
     input:
-        variant_stats_output
+        ancient(variant_stats_output)
     params:
         # NOTE: Pretty sure nested quotes required here for DuckDB
         base_freq_glob="'results/{species}/candidate_variant_table/base_freq/*.csv'",
