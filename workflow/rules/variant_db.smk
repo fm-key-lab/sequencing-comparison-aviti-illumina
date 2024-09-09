@@ -15,7 +15,8 @@ rule:
         for orient in 1 2; do
           for base in A C T G N; do
             query=".read${{orient}}_before_filtering.content_curves.${{base}}"
-            yq -o=csv $query {input} | awk -F',' -v orient=$orient -v base=$base '{{sum=0; for(i=1;i<=NF;i++) sum+=$i; avg=sum/NF; print avg","orient","base}}' >> {output}
+            yq -o=csv $query {input} | \
+            awk -F',' -v orient=$orient -v base=$base '{{sum=0; for(i=1;i<=NF;i++) sum+=$i; avg=sum/NF; print avg","orient","base}}' >> {output}
           done
         done
         '''
@@ -36,7 +37,8 @@ rule:
         '''
         touch {output}
         for strand in "+" "-"; do
-          genomeCoverageBed -bg -strand $strand -ibam {input} | awk -v strand=$strand '{{print $0, strand}}' OFS='\t' >> {output}
+          genomeCoverageBed -bg -strand $strand -ibam {input} | \
+          awk -v strand=$strand '{{print $0, strand}}' OFS='\t' >> {output}
         done
         '''
 
@@ -54,7 +56,8 @@ rule:
         'bcftools/1.20'
     shell:
         '''
-        bcftools +fill-tags {input} -- -t AF | bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE]\t%QUAL\t%INFO/DP4\n' > {output}
+        bcftools +fill-tags {input} -- -t AF | \
+        bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE]\t%QUAL\t%AF\t%DP\t%INFO/DP4\n' > {output}
         '''
 
 

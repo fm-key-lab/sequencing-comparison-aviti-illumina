@@ -1,6 +1,7 @@
 set memory_limit = getenv('MEMORY_LIMIT');
 set threads = getenv('SLURM_CPUS_PER_TASK');
 
+-- Create enum types
 create type bases as enum ('A', 'C', 'T', 'G', 'N');
 create type chroms as enum ('NC_002695.2', 'NC_002128.1', 'NC_002127.1');
 create type reads as enum ('1', '2');
@@ -26,10 +27,17 @@ from read_csv(
 	filename = true
 );
 
+-- Create and use sample enum
+create type samples as enum (
+    select distinct("sample") from base_freq
+);
+
+alter table base_freq alter "sample" type samples;
+
 -- Coverage
 create table coverage as 
 select 
-	regexp_extract(filename, 'coverage/(\d+).tsv', 1) as "sample"
+	cast(regexp_extract(filename, 'coverage/(\d+).tsv', 1) as samples) as "sample"
 	, cast(chrom as chroms) as chrom
 	, cast(strand as strands) as strand
 	, cast(chrom_start as ubigint) as chrom_start
@@ -51,15 +59,33 @@ from read_csv(
 	filename = true
 );
 
+-- Estimate average coverage per sample
+create table coverage_sample_avg as
+select
+	"sample"
+	-- In case the covered interals << genome
+	, intervals_size
+	, coverage_sum / intervals_size as coverage_sample
+from (
+	select
+		"sample"
+		, sum(chrom_end - chrom_start) as intervals_size
+		, sum((chrom_end - chrom_start) * coverage) as coverage_sum
+	from coverage
+	group by "sample"
+);
+
 -- Allele frequencies
 create table allele_freq as 
 select 
-	"sample"
+	cast("sample" as samples) as "sample"
 	, cast(chrom as chroms) as chrom
 	, cast(chrom_pos as ubigint) as chrom_pos
 	, cast(ref as bases) as ref
 	, cast(alt as bases) as alt
 	, cast(qual as decimal(4, 1)) as qual
+	, af
+	, dp
 	, info_dp4
 from read_csv(
 	getenv('ALLELE_FREQ'),
@@ -70,8 +96,10 @@ from read_csv(
 		'chrom_pos': 'bigint',
 		'ref': 'varchar',
 		'alt': 'varchar',
-		'sample': 'bigint',
+		'sample': 'varchar',
 		'qual': 'double',
+		'af': 'double',
+		'dp': 'bigint',
 		'info_dp4': 'varchar'
 	},
 	nullstr = '.',
