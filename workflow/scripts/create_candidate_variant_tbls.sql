@@ -35,9 +35,9 @@ create type samples as enum (
 alter table base_freq alter "sample" type samples;
 
 -- Coverage
-create table coverage as 
+create table coverage_strand as 
 select 
-	cast(regexp_extract(filename, 'coverage/(\d+).tsv', 1) as samples) as "sample"
+	cast(regexp_extract(filename, 'coverage/(\d+)_strand.tsv', 1) as samples) as "sample"
 	, cast(chrom as chroms) as chrom
 	, cast(strand as strands) as strand
 	, cast(chrom_start as ubigint) as chrom_start
@@ -59,19 +59,41 @@ from read_csv(
 	filename = true
 );
 
+create table coverage_total as 
+select 
+	cast(regexp_extract(filename, 'coverage/(\d+)_total.tsv', 1) as samples) as "sample"
+	, cast(chrom as chroms) as chrom
+	, cast(chrom_start as ubigint) as chrom_start
+	, cast(chrom_end as ubigint) as chrom_end
+	, cast(coverage as usmallint) as coverage
+from read_csv(
+	getenv('COVERAGE_TOT'),
+	header = false,
+	delim = '\t',
+	nullstr = '',
+	columns = {
+		'chrom': 'varchar',
+		'chrom_start': 'bigint',
+		'chrom_end': 'bigint',
+		'coverage': 'bigint'
+	},
+	auto_detect = false,
+	filename = true
+);
+
 -- Estimate average coverage per sample
 create table coverage_sample_avg as
 select
 	"sample"
 	-- In case the covered interals << genome
 	, intervals_size
-	, coverage_sum / intervals_size as coverage_sample
+	, cast((coverage_sum / intervals_size) as decimal(4, 1)) as coverage_sample
 from (
 	select
 		"sample"
 		, sum(chrom_end - chrom_start) as intervals_size
 		, sum((chrom_end - chrom_start) * coverage) as coverage_sum
-	from coverage
+	from coverage_total
 	group by "sample"
 );
 
