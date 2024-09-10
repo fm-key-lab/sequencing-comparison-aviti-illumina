@@ -59,7 +59,7 @@ rule veryfasttree:
         'results/{species}/veryfasttree/{sequencing}.veryfasttree.phylogeny.nhx',
     resources:
         cpus_per_task=32,
-        mem_mb=8_000,
+        mem_mb=64_000,
         runtime=30,
     envmodules:
         'veryfasttree/4.0.3.1'
