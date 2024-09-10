@@ -9,14 +9,14 @@ rule pseudogenome_alignment:
     output:
         'results/{species}/aligned_pseudogenomes/{sequencing}.fas',
     resources:
-        cpus_per_task=32,
-        mem_mb=16_000,
+        cpus_per_task=16,
+        mem_mb=32_000,
         runtime=15,
     envmodules:
         'duckdb/nightly'
     shell:
         '''
-        export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB" \
+        export MEMORY_LIMIT="$(({resources.mem_mb} / 1100))GB" \
                COVERAGE_THRESHOLD={params.covg} \
                MAF_THRESHOLD={params.maf} \
                QUAL_THRESHOLD={params.qual} \
