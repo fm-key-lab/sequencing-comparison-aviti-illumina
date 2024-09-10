@@ -1,4 +1,4 @@
-rule:
+rule pseudogenome_alignment:
     input:
         samplesheet=ancient('results/samplesheet.csv'),
         db=ancient('results/{species}/variants/candidate_variants.duckdb'),
@@ -26,6 +26,20 @@ rule:
         '''
 
 
+rule extract_variant_sites:
+    input:
+        ancient('results/{species}/aligned_pseudogenomes/{sequencing}.fas'),
+    output:
+        'results/{species}/snpsites/{sequencing}.filtered_alignment.fas',
+    localrule: True
+    envmodules:
+        'snp-sites/2.5.1'
+    shell:
+        '''
+        snp-sites -o {output} {input}
+        '''
+
+
 rule veryfasttree:
     """Run VeryFastTree.
 
@@ -40,7 +54,7 @@ rule veryfasttree:
       - [GitHub](https://github.com/citiususc/veryfasttree)
     """
     input:
-        ancient('results/{species}/aligned_pseudogenomes/{sequencing}.fas'),
+        ancient('results/{species}/aligned_pseudogenomes/{sequencing}.filtered_alignment.fas'),
     output:
         'results/{species}/veryfasttree/{sequencing}.veryfasttree.phylogeny.nhx',
     resources:
