@@ -6,12 +6,12 @@ set threads = getenv('SLURM_CPUS_PER_TASK');
 -- TODO: SQL logic here can be simplified
 create temp table phylogeny_input_candidates as
 select 
-    af.sample
+    variants.sample
     -- Collapse chromosome and position into single identifier
-    , af.chrom || '_' || af.chrom_pos as chrom_chrom_pos
-    , af.ref
-    , af.alt
-from allele_freq af, (
+    , variants.chrom || '_' || variants.chrom_pos as chrom_chrom_pos
+    , variants.ref
+    , variants.alt
+from candidate_variant_tbl variants, (
     select 
         chrom, chrom_pos, ref
     from (
@@ -20,7 +20,7 @@ from allele_freq af, (
             , chrom, chrom_pos, ref
         from (
             select *
-            from allele_freq
+            from candidate_variant_tbl
             where
                 -- ~ * ~ * ~ * ~
                 -- TODO: Keep indels
@@ -34,10 +34,10 @@ from allele_freq af, (
     )
     -- TODO: How to pass variable here? `getenv(.)` doesn't work.
     using sample 100
-) rand
+) selected
 where
-    af.chrom = rand.chrom and
-    af.chrom_pos = rand.chrom_pos
+    variants.chrom = selected.chrom and
+    variants.chrom_pos = selected.chrom_pos
 ;
 
 copy (
