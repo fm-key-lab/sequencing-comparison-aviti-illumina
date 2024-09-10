@@ -22,7 +22,7 @@ copy (
                 strlen(ref) = 1 
                 and strlen(alt) = 1 
                 -- ~ * ~ * ~ * ~
-            using sample reservoir(1%) repeatable (10023)
+            using sample reservoir(.01%) repeatable (10023)
         ) selected
         cross join (
             select distinct "sample"
