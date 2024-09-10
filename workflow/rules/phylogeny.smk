@@ -60,7 +60,8 @@ rule raxml_ng:
     input:
         ancient('results/{species}/aligned_pseudogenomes/aligned_pseudogenome.fas'),
     params:
-        extra='--all --model GTR+G --bs-trees 1000'
+        extra='--all --model GTR+G --bs-trees 1000',
+        prefix='results/{species}/raxml_ng/output',
     output:
         multiext(
             'results/{species}/raxml_ng/output.raxml',
@@ -81,7 +82,7 @@ rule raxml_ng:
     shell:
         '''
         export OMP_PLACES=threads
-        raxml-ng {params.extra} --msa {input} --threads {resources.cpus_per_task} --prefix results/{species}/raxml_ng/output
+        raxml-ng {params.extra} --msa {input} --threads {resources.cpus_per_task} --prefix {params.prefix}
         '''
 
 
