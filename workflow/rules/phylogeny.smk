@@ -54,7 +54,7 @@ rule veryfasttree:
       - [GitHub](https://github.com/citiususc/veryfasttree)
     """
     input:
-        ancient('results/{species}/aligned_pseudogenomes/{sequencing}.filtered_alignment.fas'),
+        ancient('results/{species}/snpsites/{sequencing}.filtered_alignment.fas'),
     output:
         'results/{species}/veryfasttree/{sequencing}.veryfasttree.phylogeny.nhx',
     resources:
@@ -94,7 +94,7 @@ rule raxml_ng:
       - [GitHub](https://github.com/amkozlov/raxml-ng)
     """
     input:
-        ancient('results/{species}/aligned_pseudogenomes/{sequencing}.fas'),
+        ancient('results/{species}/snpsites/{sequencing}.filtered_alignment.fas'),
     params:
         extra='--all --model GTR+G --bs-trees 200',
         prefix='results/{species}/raxml_ng/{sequencing}',
