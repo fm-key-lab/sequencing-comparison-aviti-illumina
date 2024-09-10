@@ -1,11 +1,11 @@
 rule:
     input:
-        'results/{species}/variants/candidate_variants.duckdb',
+        ancient('results/{species}/variants/candidate_variants.duckdb'),
     params:
         maf=".85",
         qual=30,
     output:
-        'results/{species}/aligned_pseudogenomes/aligned_pseudogenome.fas',
+        'results/{species}/aligned_pseudogenomes/{sequencing}.fas',
     localrule: True
     envmodules:
         'duckdb/nightly'
@@ -13,16 +13,17 @@ rule:
         '''
         export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB" \
                MAF_THRESHOLD=".85" \
-               QUAL_THRESHOLD=30
+               QUAL_THRESHOLD=30 \
+               SEQUENCING={wildcards.sequencing}
         duckdb {input} -c ".read workflow/scripts/finalize_variants.sql" > {output}
         '''
 
 
 rule veryfasttree:
     input:
-        ancient('results/{species}/aligned_pseudogenomes/aligned_pseudogenome.fas'),
+        'results/{species}/aligned_pseudogenomes/{sequencing}.fas',
     output:
-        'results/{species}/veryfasttree/veryfasttree_phylogeny.nhx',
+        'results/{species}/veryfasttree/{sequencing}.veryfasttree.phylogeny.nhx',
     resources:
         cpus_per_task=32,
         mem_mb=8_000,
@@ -58,19 +59,19 @@ rule raxml_ng:
         {{ prefix }}.raxml.log: Execution log
     """
     input:
-        ancient('results/{species}/aligned_pseudogenomes/aligned_pseudogenome.fas'),
+        'results/{species}/aligned_pseudogenomes/{sequencing}.fas',
     params:
         extra='--all --model GTR+G --bs-trees 1000',
-        prefix='results/{species}/raxml_ng/output',
+        prefix='results/{species}/raxml_ng/{sequencing}',
     output:
         multiext(
-            'results/{species}/raxml_ng/output.raxml',
+            'results/{species}/raxml_ng/{sequencing}.raxml',
             '.reduced.phy',
-            '.raxml.rba',
-            '.raxml.bestTreeCollapsed',
-            '.raxml.bestTree',
-            '.raxml.bestModel',
-            '.raxml.log'
+            '.rba',
+            '.bestTreeCollapsed',
+            '.bestTree',
+            '.bestModel',
+            '.log'
         )
     resources:
         cpus_per_task=48,
@@ -88,15 +89,12 @@ rule raxml_ng:
 
 rule:
     input:
-        'results/{species}/veryfasttree/veryfasttree_phylogeny.nhx',
-        multiext(
-            'results/{species}/raxml_ng/output.raxml',
-            '.reduced.phy',
-            '.raxml.rba',
-            '.raxml.bestTreeCollapsed',
-            '.raxml.bestTree',
-            '.raxml.bestModel',
-            '.raxml.log'
+        expand(
+            [
+                'results/{{species}}/veryfasttree/{sequencing}.veryfasttree.phylogeny.nhx',
+                'results/{{species}}/raxml_ng/{sequencing}.raxml.bestTree',
+            ],
+            sequencing=config['wildcards']['sequencing'].split('|'),
         )
     output:
         touch('results/{species}/phylogenies.done')
