@@ -1,5 +1,6 @@
 set memory_limit = getenv('MEMORY_LIMIT');
-set threads = getenv('SLURM_CPUS_PER_TASK');
+-- Single-threading ensures deterministict sampling, given seed
+set threads = 1;
 -- Ensure stdout not polluted
 set enable_progress_bar = false;
 
@@ -15,7 +16,13 @@ copy (
             select distinct on (chrom, chrom_pos)
                 chrom, chrom_pos, ref
             from candidate_variant_tbl
-            using sample reservoir(0.1%) repeatable (10023)
+            where 
+                -- ~ * ~ * ~ * ~
+                -- TODO: Keep indels
+                strlen(ref) = 1 
+                and strlen(alt) = 1 
+                -- ~ * ~ * ~ * ~
+            using sample reservoir(1%) repeatable (10023)
         ) selected
         cross join (
             select distinct "sample"

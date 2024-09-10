@@ -9,9 +9,9 @@ rule pseudogenome_alignment:
     output:
         'results/{species}/aligned_pseudogenomes/{sequencing}.fas',
     resources:
-        cpus_per_task=16,
-        mem_mb=32_000,
-        runtime=15,
+        cpus_per_task=1,
+        mem_mb=64_000,
+        runtime=30,
     envmodules:
         'duckdb/nightly'
     shell:
