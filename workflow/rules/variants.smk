@@ -16,7 +16,7 @@ rule:
         '''
 
 
-def variant_tables(wildcards):
+def candidate_variant_tables(wildcards):
     import pandas as pd
 
     sample_ids = pd.read_csv(
@@ -33,7 +33,7 @@ def variant_tables(wildcards):
 
 rule:
     input:
-        ancient(variant_stats_output)
+        ancient(candidate_variant_tables)
     params:
         glob="'results/{species}/variants/*_af.tsv'",
     output:
