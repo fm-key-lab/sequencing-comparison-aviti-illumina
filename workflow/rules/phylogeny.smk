@@ -12,6 +12,7 @@ rule:
     shell:
         '''
         export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB" \
+               SLURM_CPUS_PER_TASK=1 \
                MAF_THRESHOLD=".85" \
                QUAL_THRESHOLD=30 \
                SEQUENCING={wildcards.sequencing}
