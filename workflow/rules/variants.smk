@@ -84,5 +84,5 @@ rule:
     shell:
         '''
         python -c "from Bio import AlignIO, SeqIO; alignment = AlignIO.read({input}, 'fasta');
-        handle = open({output}, 'w'); SeqIO.write(alignment, handle, 'phylip'); handle.close()"
+        handle = open('{output}', 'w'); SeqIO.write(alignment, handle, 'phylip'); handle.close()"
         '''
