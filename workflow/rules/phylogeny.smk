@@ -42,7 +42,7 @@ rule veryfasttree:
     resources:
         cpus_per_task=32,
         mem_mb=8_000,
-        runtime=15,
+        runtime=30,
     envmodules:
         'veryfasttree/4.0.3.1'
     shell:
