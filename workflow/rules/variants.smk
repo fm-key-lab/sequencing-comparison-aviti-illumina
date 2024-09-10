@@ -66,7 +66,7 @@ rule:
     shell:
         '''
         export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB" MAF_THRESHOLD=".85" QUAL_THRESHOLD=30 \
-        duckdb {output} -c ".read workflow/scripts/finalize_variants.sql" > {output}
+        duckdb {input} -c ".read workflow/scripts/finalize_variants.sql" > {output}
         '''
 
 
@@ -75,6 +75,9 @@ rule:
         'results/{species}/aligned_pseudogenomes/aligned_pseudogenome.fas',
     output:
         'results/{species}/aligned_pseudogenomes/aligned_pseudogenome.phy',
+    localrule: True
+    envmodules:
+        'sandbox/0.0.1-alpha'
     run:
         from Bio import AlignIO, SeqIO
         alignment = AlignIO.read(input[0], 'fasta')
