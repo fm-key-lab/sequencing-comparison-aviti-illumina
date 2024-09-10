@@ -1,7 +1,6 @@
 set memory_limit = getenv('MEMORY_LIMIT');
 set threads = getenv('SLURM_CPUS_PER_TASK');
 
-create type bases as enum ('A', 'C', 'T', 'G', 'N');
 create type chroms as enum ('NC_002695.2', 'NC_002128.1', 'NC_002127.1');
 
 create table allele_freq as 
@@ -9,8 +8,8 @@ select
 	"sample"
 	, cast(chrom as chroms) as chrom
 	, cast(chrom_pos as ubigint) as chrom_pos
-	, cast(ref as bases) as ref
-	, cast(alt as bases) as alt
+	, ref
+	, alt
 	, (
 		cast(split_part(info_dp4, ',', 3) as usmallint) + 
 		cast(split_part(info_dp4, ',', 4) as usmallint)
@@ -42,6 +41,11 @@ from read_csv(
 	auto_detect = false
 )
 where strlen(alt) >= 1;
+
+-- NOTE: Since only dealing with SNVs
+create type bases as enum ('A', 'C', 'T', 'G', 'N');
+alter table allele_freq alter ref type bases;
+alter table allele_freq alter alt type bases;
 
 create type samples as enum (
     select distinct("sample") from allele_freq

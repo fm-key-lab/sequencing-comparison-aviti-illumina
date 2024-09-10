@@ -33,7 +33,7 @@ def candidate_variant_tables(wildcards):
 
 rule:
     input:
-        ancient(candidate_variant_tables)
+        candidate_variant_tables
     params:
         glob="'results/{species}/variants/*_af.tsv'",
     output:
