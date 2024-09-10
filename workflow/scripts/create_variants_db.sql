@@ -2,8 +2,11 @@ set memory_limit = getenv('MEMORY_LIMIT');
 set threads = getenv('SLURM_CPUS_PER_TASK');
 
 create type chroms as enum ('NC_002695.2', 'NC_002128.1', 'NC_002127.1');
+create type bases as enum ('A', 'C', 'T', 'G', 'N'); -- NOTE: Unused when indels
 
-create table allele_freq as 
+-- TODO: Create `samples` enum type from sample sheet
+
+create table candidate_variant_tbl as 
 select 
 	"sample"
 	, cast(chrom as chroms) as chrom
@@ -42,15 +45,10 @@ from read_csv(
 )
 where strlen(alt) >= 1;
 
--- NOTE: Since only dealing with SNVs
-create type bases as enum ('A', 'C', 'T', 'G', 'N');
-alter table allele_freq alter ref type bases;
-alter table allele_freq alter alt type bases;
-
 create type samples as enum (
-    select distinct("sample") from allele_freq
+    select distinct("sample") from candidate_variant_tbl
 );
 
-alter table allele_freq alter "sample" type samples;
+alter table candidate_variant_tbl alter "sample" type samples;
 
--- TODO: Add metadata.
+-- TODO: Add metadata on calling, code, etc.
