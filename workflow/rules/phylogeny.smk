@@ -1,7 +1,9 @@
 rule:
     input:
-        ancient('results/{species}/variants/candidate_variants.duckdb'),
+        samplesheet=ancient('results/samplesheet.csv'),
+        db=ancient('results/{species}/variants/candidate_variants.duckdb'),
     params:
+        covg=20,
         maf=".85",
         qual=30,
     output:
@@ -15,10 +17,12 @@ rule:
     shell:
         '''
         export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB" \
-               MAF_THRESHOLD=".85" \
-               QUAL_THRESHOLD=30 \
-               SEQUENCING={wildcards.sequencing}
-        duckdb {input} -c ".read workflow/scripts/finalize_variants.sql" > {output}
+               COVERAGE_THRESHOLD={params.covg} \
+               MAF_THRESHOLD={params.maf} \
+               QUAL_THRESHOLD={params.qual} \
+               SEQUENCING={wildcards.sequencing} \
+               SAMPLESHEET={input.samplesheet}
+        duckdb {input.db} -c ".read workflow/scripts/finalize_variants.sql" > {output}
         '''
 
 
