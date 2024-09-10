@@ -48,11 +48,14 @@ rule raxml_ng:
     Returns:
         {{ prefix }}.raxml.reduced.phy: Reduced alignment (with duplicates 
           and gap-only sites/taxa removed)
-        {{ prefix }}.raxml.reduced.phy: Binary MSA file
-        {{ prefix }}.raxml.reduced.phy: Best ML tree with collapsed near-zero branches
-        {{ prefix }}.raxml.reduced.phy: Best ML tree
-        {{ prefix }}.raxml.reduced.phy: Optimized model
-        {{ prefix }}.raxml.reduced.phy: Execution log
+        {{ prefix }}.raxml.rba: Binary MSA file
+        {{ prefix }}.raxml.bestTreeCollapsed: Best ML tree with collapsed near-zero branches
+        {{ prefix }}.raxml.bestTree: Best ML tree
+        {{ prefix }}.raxml.mlTrees: All ML trees
+        {{ prefix }}.raxml.support: Best ML tree with Felsenstein bootstrap (FBP) support
+        {{ prefix }}.raxml.bestModel: Optimized model
+        {{ prefix }}.raxml.bootstraps: Bootstrap trees
+        {{ prefix }}.raxml.log: Execution log
     """
     input:
         ancient('results/{species}/aligned_pseudogenomes/aligned_pseudogenome.fas'),
