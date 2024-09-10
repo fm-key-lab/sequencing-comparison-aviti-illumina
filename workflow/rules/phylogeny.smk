@@ -3,8 +3,10 @@ rule pseudogenome_alignment:
         samplesheet=ancient('results/samplesheet.csv'),
         db=ancient('results/{species}/variants/candidate_variants.duckdb'),
     params:
+        alt=3,
         covg=20,
-        maf=".85",
+        idist=500,
+        maf=".95",
         qual=30,
     output:
         'results/{species}/aligned_pseudogenomes/{sequencing}.fas',
@@ -17,11 +19,13 @@ rule pseudogenome_alignment:
     shell:
         '''
         export MEMORY_LIMIT="$(({resources.mem_mb} / 1100))GB" \
+               ALT_STRAND_DP_THRESHOLD={params.alt} \
                COVERAGE_THRESHOLD={params.covg} \
+               INTERBASE_DISTANCE_THRESHOLD={params.idist} \
                MAF_THRESHOLD={params.maf} \
                QUAL_THRESHOLD={params.qual} \
-               SEQUENCING={wildcards.sequencing} \
-               SAMPLESHEET={input.samplesheet}
+               SAMPLESHEET={input.samplesheet} \
+               SEQUENCING={wildcards.sequencing}
         duckdb -readonly {input.db} -c ".read workflow/scripts/finalize_variants.sql" > {output}
         '''
 

@@ -13,6 +13,8 @@ select
 	, cast(chrom_pos as ubigint) as chrom_pos
 	, ref
 	, alt
+	, cast(split_part(info_dp4, ',', 3) as usmallint) as alt_fwd_dp
+	, cast(split_part(info_dp4, ',', 4) as usmallint) as alt_rev_dp
 	, (
 		cast(split_part(info_dp4, ',', 3) as usmallint) + 
 		cast(split_part(info_dp4, ',', 4) as usmallint)
