@@ -4,6 +4,9 @@ set threads = getenv('SLURM_CPUS_PER_TASK');
 -- TODO: Must be a bit more dynamic, e.g., output fastas using sample info
 
 -- TODO: SQL logic here can be simplified
+
+-- TODO: Rewrite to deprecate create table (and thus allow read concurrency)
+
 create temp table phylogeny_input_candidates as
 select 
     variants.sample
