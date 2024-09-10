@@ -22,7 +22,7 @@ rule:
                QUAL_THRESHOLD={params.qual} \
                SEQUENCING={wildcards.sequencing} \
                SAMPLESHEET={input.samplesheet}
-        duckdb {input.db} -c ".read workflow/scripts/finalize_variants.sql" > {output}
+        duckdb -readonly {input.db} -c ".read workflow/scripts/finalize_variants.sql" > {output}
         '''
 
 
