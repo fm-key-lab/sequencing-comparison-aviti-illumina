@@ -83,5 +83,5 @@ rule:
         'sandbox/0.0.1-alpha'
     shell:
         '''
-        python -c "from Bio import AlignIO, SeqIO; alignment = AlignIO.read(input[0], 'fasta'); handle = open(output[0], 'w'); SeqIO.write(alignment, handle, 'phylip'); handle.close()"
+        python -c "from Bio import AlignIO, SeqIO; alignment = AlignIO.read({input}, 'fasta'); handle = open({output}, 'w'); SeqIO.write(alignment, handle, 'phylip'); handle.close()"
         '''
