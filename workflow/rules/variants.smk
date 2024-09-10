@@ -39,9 +39,9 @@ rule:
     output:
         'results/{species}/variants/candidate_variants.duckdb',
     resources:
-        cpus_per_task=48,
-        mem_mb=64_000,
-        runtime=30
+        cpus_per_task=32,
+        mem_mb=48_000,
+        runtime=15
     localrule: False
     envmodules:
         'duckdb/nightly'
