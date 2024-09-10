@@ -47,7 +47,8 @@ rule:
         'duckdb/nightly'
     shell:
         '''
-        export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB" BCFTOOLS_QUERY={params.glob}
+        export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB" \
+               BCFTOOLS_QUERY={params.glob}
         duckdb {output} -c ".read workflow/scripts/create_variants_db.sql"
         '''
 
@@ -65,7 +66,9 @@ rule:
         'duckdb/nightly'
     shell:
         '''
-        export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB" MAF_THRESHOLD=".85" QUAL_THRESHOLD=30 \
+        export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB" \
+               MAF_THRESHOLD=".85" \
+               QUAL_THRESHOLD=30
         duckdb {input} -c ".read workflow/scripts/finalize_variants.sql" > {output}
         '''
 
