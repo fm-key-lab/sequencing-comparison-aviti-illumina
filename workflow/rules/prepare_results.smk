@@ -89,8 +89,7 @@ rule record_sequence_typing_results:
         'duckdb/nightly'
     shell:
         '''
-        export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB"
-        export MLST_RESULTS="{params.mlst_glob}"
+        export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB" MLST_RESULTS="{params.mlst_glob}"
         duckdb {output} -c ".read workflow/scripts/parse_srst2_output.sql"
         '''
 

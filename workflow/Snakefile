@@ -17,7 +17,7 @@ module widevariant:
 
 include: 'rules/samplesheet.smk'
 include: 'rules/mapping.smk'
-include: 'rules/variant_db.smk'
+include: 'rules/variants.smk'
 include: 'rules/sequence_typing.smk'
 include: 'rules/phylogeny.smk'
 include: 'rules/prepare_results.smk'
@@ -26,7 +26,7 @@ include: 'rules/prepare_report.smk'
 
 rule all:
     input:
-        expand('results/candidate_variant_table/{species}.duckdb', species=['Ecoli'])
+        expand('results/{species}/aligned_pseudogenomes/aligned_pseudogenome.phy', species=['Ecoli'])
     localrule: True
     default_target: True
 
@@ -39,10 +39,10 @@ onstart:
 
 onsuccess:
     shell(f'mkdir -p "/r/t/thosi/{config['run_id']}"')
+    shell(f'rsync -au --progress report "/r/t/thosi/{config['run_id']}/"')
 
     # TODO: Should specify what's tranferred (e.g., leave `results/../work` from nf behind).
-    shell(f'rsync -au --progress report "/r/t/thosi/{config['run_id']}/"')
-    shell(f'rsync -au --progress --exclude "work" results "/r/t/thosi/{config['run_id']}/"')
+    # shell(f'rsync -au --progress --exclude "work" results "/r/t/thosi/{config['run_id']}/"')
     
     # Clean up compiled report
     shell('rm -f report/main.pdf')
