@@ -6,13 +6,16 @@ rule:
         qual=30,
     output:
         'results/{species}/aligned_pseudogenomes/{sequencing}.fas',
-    localrule: True
+    resources:
+        cpus_per_task=32,
+        mem_mb=2_048,
+        runtime=15,
+    localrule: False
     envmodules:
         'duckdb/nightly'
     shell:
         '''
         export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB" \
-               SLURM_CPUS_PER_TASK=1 \
                MAF_THRESHOLD=".85" \
                QUAL_THRESHOLD=30 \
                SEQUENCING={wildcards.sequencing}
