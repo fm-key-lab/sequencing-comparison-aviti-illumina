@@ -33,7 +33,7 @@ from candidate_variant_tbl variants, (
         group by chrom, chrom_pos, ref
     )
     -- TODO: How to pass variable here? `getenv(.)` doesn't work.
-    using sample 100
+    using sample 1000
 ) selected
 where
     variants.chrom = selected.chrom and
@@ -47,7 +47,8 @@ copy (
         using any_value(alt)
         group by "sample"
     )
-    select '>' || "sample" || chr(10) || string_agg(ifnull(allele, '-'), '') as fasta_entry
+    select '>' || "sample" || chr(10) || string_agg(ifnull(allele, '-'), '-') as fasta_entry_gapped
+    -- select '>' || "sample" || chr(10) || string_agg(ifnull(allele, '-'), '') as fasta_entry
     from wide_tmp unpivot include nulls (
         allele
         for chrom_chrom_pos in (columns(* exclude("sample")))

@@ -51,37 +51,3 @@ rule:
                BCFTOOLS_QUERY={params.glob}
         duckdb {output} -c ".read workflow/scripts/create_variants_db.sql"
         '''
-
-
-rule:
-    input:
-        'results/{species}/variants/candidate_variants.duckdb',
-    params:
-        maf=".85",
-        qual=30,
-    output:
-        'results/{species}/aligned_pseudogenomes/aligned_pseudogenome.fas',
-    localrule: True
-    envmodules:
-        'duckdb/nightly'
-    shell:
-        '''
-        export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB" \
-               MAF_THRESHOLD=".85" \
-               QUAL_THRESHOLD=30
-        duckdb {input} -c ".read workflow/scripts/finalize_variants.sql" > {output}
-        '''
-
-
-rule:
-    input:
-        'results/{species}/aligned_pseudogenomes/aligned_pseudogenome.fas',
-    output:
-        'results/{species}/aligned_pseudogenomes/aligned_pseudogenome.phy',
-    localrule: True
-    envmodules:
-        'sandbox/0.0.1-alpha'
-    shell:
-        '''
-        python -c "from Bio import AlignIO, SeqIO; alignment = AlignIO.read('{input}', 'fasta'); handle = open('{output}', 'w'); SeqIO.write(alignment, handle, 'phylip'); handle.close()"
-        '''
