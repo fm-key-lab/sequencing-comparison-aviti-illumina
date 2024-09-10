@@ -10,7 +10,6 @@ rule:
         cpus_per_task=32,
         mem_mb=16_000,
         runtime=15,
-    localrule: False
     envmodules:
         'duckdb/nightly'
     shell:
@@ -24,6 +23,18 @@ rule:
 
 
 rule veryfasttree:
+    """Run VeryFastTree.
+
+    Build a phylogeny from the multiple sequence alignment using the 
+    VeryFastTree implementation of the FastTree-2 algorithm.
+
+    Args:
+
+    Returns:
+    
+    Notes:
+      - [GitHub](https://github.com/citiususc/veryfasttree)
+    """
     input:
         'results/{species}/aligned_pseudogenomes/{sequencing}.fas',
     output:
@@ -32,7 +43,6 @@ rule veryfasttree:
         cpus_per_task=32,
         mem_mb=8_000,
         runtime=15,
-    localrule: False
     envmodules:
         'veryfasttree/4.0.3.1'
     shell:
@@ -43,7 +53,7 @@ rule veryfasttree:
 
 
 rule raxml_ng:
-    """Run RAxML-NG .
+    """Run RAxML-NG.
 
     Build a maximum-likelihood phylogeny from the multiple sequence alignment 
     using RAxML Next Generation.
@@ -68,7 +78,7 @@ rule raxml_ng:
     input:
         'results/{species}/aligned_pseudogenomes/{sequencing}.fas',
     params:
-        extra='--all --model GTR+G --bs-trees 1000',
+        extra='--all --model GTR+G --bs-trees 200',
         prefix='results/{species}/raxml_ng/{sequencing}',
     output:
         multiext(
@@ -83,8 +93,7 @@ rule raxml_ng:
     resources:
         cpus_per_task=48,
         mem_mb=64_000,
-        runtime=60,
-    localrule: False
+        runtime=120,
     envmodules:
         'raxml-ng/1.2.2_MPI'
     shell:
