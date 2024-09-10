@@ -13,7 +13,7 @@ copy (
             select distinct on (chrom, chrom_pos)
                 chrom, chrom_pos, ref
             from candidate_variant_tbl
-            using sample reservoir(50 rows) repeatable (10023)
+            using sample reservoir(5%) repeatable (10023)
         ) selected
         cross join (
             select distinct "sample"
