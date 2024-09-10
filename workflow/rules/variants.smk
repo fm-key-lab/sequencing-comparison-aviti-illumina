@@ -83,8 +83,7 @@ rule:
         'sandbox/0.0.1-alpha'
     shell:
         '''
-        python -c "
-        from Bio import AlignIO, SeqIO
+        python -c "from Bio import AlignIO, SeqIO
         alignment = AlignIO.read(input[0], 'fasta')
         with open(output[0], 'w') as f:
             SeqIO.write(alignment, f, 'phylip')
