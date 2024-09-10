@@ -27,9 +27,8 @@ include: 'rules/prepare_report.smk'
 rule all:
     input:
         expand(
-            'results/{species}/aligned_pseudogenomes/{sequencing}.fas',
-            species=['Ecoli'],
-            sequencing=['aviti', 'illumina']
+            'results/{species}/phylogenies.done',
+            species=['Ecoli']
         )
     localrule: True
     default_target: True
