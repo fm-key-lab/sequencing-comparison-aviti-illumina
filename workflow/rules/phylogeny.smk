@@ -25,7 +25,7 @@ rule veryfasttree:
         'results/{species}/veryfasttree/veryfasttree_phylogeny.nhx',
     resources:
         cpus_per_task=32,
-        mem_mb=8,
+        mem_mb=8_000,
         runtime=15,
     localrule: False
     envmodules:
