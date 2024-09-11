@@ -31,7 +31,6 @@ use rule bactmap from widevariant as mapping with:
     params:
         pipeline='bactmap',
         profile='singularity',
-        process_cache="'lenient'",
         nxf='-work-dir "results/{species}/work" -config config/bactmap.config',
         outdir='results/{species}',
     output:
