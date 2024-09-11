@@ -17,6 +17,9 @@ checkpoint mapping_samplesheet:
         (
             samplesheet[species_mask]
             .filter(['sample', 'fastq_1', 'fastq_2'])
+            # TODO: bwa mem throws "paired reads have different names" error for sample 76.
+            #       temporarily excluding
+            .query('sample != 76')
             .to_csv(output[0], index=False)
         )
 
@@ -28,6 +31,7 @@ use rule bactmap from widevariant as mapping with:
     params:
         pipeline='bactmap',
         profile='singularity',
+        process_cache="'lenient'",
         nxf='-work-dir "results/{species}/work" -config config/bactmap.config',
         outdir='results/{species}',
     output:
