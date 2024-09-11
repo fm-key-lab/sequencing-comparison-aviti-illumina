@@ -47,10 +47,11 @@ copy (
             from candidate_variant_tbl
             where 
                 "sample" in (
-                    select cast(cast("sample" as varchar) as samples)
+                    select try_cast(cast("sample" as varchar) as samples) as sample_
                     from read_csv(getenv('SAMPLESHEET'))
                     where
-                        "group" = getenv('SEQUENCING')
+                        sample_ is not null
+                        and "group" = getenv('SEQUENCING')
                         and "donor" = getenv('DONOR')
                 )
         ) template
