@@ -1,7 +1,3 @@
-mlst_key = {
-    'Escherichia coli': 'Escherichia_coli#1',
-}
-
 use rule srst2 from widevariant as sequence_typing with:
     input:
         pe=multiext(

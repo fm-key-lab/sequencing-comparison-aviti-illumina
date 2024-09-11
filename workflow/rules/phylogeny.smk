@@ -74,7 +74,6 @@ rule veryfasttree:
         '''
         export OMP_PLACES=threads
         veryfasttree {input} {params.extra} -threads {resources.cpus_per_task} > {output}
-        touch {output}
         '''
 
 
