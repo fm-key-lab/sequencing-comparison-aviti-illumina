@@ -143,7 +143,7 @@ rule:
                 'results/{{species}}/raxml_ng/{sequencing}/{donor}.raxml.bestTree',
             ],
             sequencing=config['wildcards']['sequencing'].split('|'),
-            donor=config['wildcards']['donor'].split('|'),
+            donor=config['wildcards']['donors'].split('|'),
         )
     output:
         touch('results/{species}/phylogenies.done')
