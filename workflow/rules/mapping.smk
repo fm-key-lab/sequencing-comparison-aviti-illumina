@@ -29,8 +29,7 @@ use rule bactmap from widevariant as mapping with:
         pipeline='bactmap',
         profile='singularity',
         nxf='-work-dir "results/{species}/work" -config config/bactmap.config',
-        input='"results/{species}"',
-        outdir='"results/{species}"',
+        outdir='results/{species}',
     output:
         'results/{species}/pipeline_info/pipeline_report.txt',
         'results/{species}/multiqc/multiqc_data/multiqc_fastp.yaml',

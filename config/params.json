@@ -2,7 +2,7 @@
   "wildcards": {
     "donors": "B001|B002",
     "sequencing": "aviti|illumina",
-    "species": "Escherichia coli"
+    "species": "Escherichia_coli"
   },
   "variants_thresh": {
     "reads_alt": 3,
@@ -19,7 +19,7 @@
   "outgroup": {
     "B001": {
       "species": {
-        "Escherichia coli": {
+        "Escherichia_coli": {
           "ID": "B002"
         },
         "Bifidobacterium breve": {
@@ -29,7 +29,7 @@
     },
     "B002": {
       "species": {
-        "Escherichia coli": {
+        "Escherichia_coli": {
           "ID": "B001_0272"
         },
         "Bifidobacterium breve": {
