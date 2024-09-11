@@ -21,6 +21,8 @@ checkpoint samplesheet:
         
         samplesheet = create_samplesheet(input[0], config['data'])
         
+        samplesheet['species'] = samplesheet['species'].str.replace(' ', '_')
+
         samplesheet = samplesheet[
             samplesheet['donor'].isin(config['wildcards']['donors'].split('|')) &
             samplesheet['species'].isin(config['wildcards']['species'].split('|'))
