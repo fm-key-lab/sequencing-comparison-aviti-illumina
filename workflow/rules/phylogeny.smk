@@ -128,7 +128,7 @@ rule raxml_ng:
         touch "{params.prefix}.raxml.mlTrees" # May not be generated unless using bootstraps
         touch "{params.prefix}.raxml.support" # 
         touch "{params.prefix}.raxml.bootstraps" # 
-        raxml-ng {params.extra} --msa {input} --threads {resources.cpus_per_task} --prefix {params.prefix}
+        raxml-ng {params.extra} --msa {input} --threads {resources.cpus_per_task} --prefix {params.prefix} --redo
         '''
 
 
