@@ -32,7 +32,7 @@ copy (
                     and strlen(alt) = 1 
                     -- ~ * ~ * ~ * ~
                 -- TODO: Fix hard-coding of sample size and seed (`getenv(.)` fails)
-                using sample reservoir(.01%) repeatable (10023)
+                using sample reservoir(2000 rows) repeatable (10023)
             )
             select chrom, chrom_pos, ref
             from unpruned

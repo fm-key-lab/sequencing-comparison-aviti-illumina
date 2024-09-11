@@ -33,7 +33,7 @@ wildcard_constraints:
 rule all:
     input:
         expand(
-            'results/{species}/phylogenies.done',
+            'results/{species}/phylogenies_2000.done',
             species=config['wildcards']['species'].split('|')
         ),
         'report/main.pdf'

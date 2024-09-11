@@ -60,8 +60,10 @@ rule veryfasttree:
     """
     input:
         'results/{species}/snpsites/{sequencing}/{donor}.filtered_alignment.fas',
+    params:
+        extra='-double-precision -nt'
     output:
-        'results/{species}/veryfasttree/{sequencing}/{donor}.veryfasttree.phylogeny.nhx',
+        'results/{species}/veryfasttree/{sequencing}/{donor}_2000.veryfasttree.phylogeny.nhx',
     resources:
         cpus_per_task=32,
         mem_mb=64_000,
@@ -71,7 +73,7 @@ rule veryfasttree:
     shell:
         '''
         export OMP_PLACES=threads
-        veryfasttree {input} -double-precision -nt -threads {resources.cpus_per_task} > {output}
+        veryfasttree {input} {params.extra} -threads {resources.cpus_per_task} > {output}
         touch {output}
         '''
 
@@ -108,7 +110,7 @@ rule raxml_ng:
         prefix='results/{species}/raxml_ng/{sequencing}/{donor}',
     output:
         multiext(
-            'results/{species}/raxml_ng/{sequencing}/{donor}.raxml',
+            'results/{species}/raxml_ng/{sequencing}/{donor}_2000.raxml',
             '.reduced.phy',
             '.rba',
             '.bestTreeCollapsed',
@@ -138,12 +140,12 @@ rule:
     input:
         expand(
             [
-                'results/{{species}}/veryfasttree/{sequencing}/{donor}.veryfasttree.phylogeny.nhx',
-                'results/{{species}}/raxml_ng/{sequencing}/{donor}.raxml.bestTree',
+                'results/{{species}}/veryfasttree/{sequencing}/{donor}_2000.veryfasttree.phylogeny.nhx',
+                'results/{{species}}/raxml_ng/{sequencing}/{donor}_2000.raxml.bestTree',
             ],
             sequencing=config['wildcards']['sequencing'].split('|'),
             donor=config['wildcards']['donors'].split('|'),
         )
     output:
-        touch('results/{species}/phylogenies.done')
+        touch('results/{species}/phylogenies_2000.done')
     localrule: True
