@@ -8,7 +8,7 @@ keep-going: false
 printshellcmds: true
 
 software-deployment-method: env-modules
-apptainer-args: "--bind '/u/thosi' --bind '/ptmp/thosi'"
+# apptainer-args: "--bind '/u/thosi' --bind '/ptmp/thosi'"
 
 default-resources:
     slurm_account: "mib_cpu"
