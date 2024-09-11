@@ -51,6 +51,7 @@ copy (
                     from read_csv(getenv('SAMPLESHEET'))
                     where
                         "group" = getenv('SEQUENCING')
+                        and "donor" = getenv('DONOR')
                 )
         ) template
         left join (

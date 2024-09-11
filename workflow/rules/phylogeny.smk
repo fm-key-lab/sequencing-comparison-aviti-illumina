@@ -1,15 +1,15 @@
 rule pseudogenome_alignment:
     input:
-        samplesheet=ancient('results/samplesheet.csv'),
-        db=ancient('results/{species}/variants/candidate_variants.duckdb'),
+        samplesheet='results/samplesheet.csv',
+        db='results/{species}/variants/candidate_variants.duckdb',
     params:
-        alt=3,
-        covg=20,
-        idist=500,
-        maf=".95",
-        qual=30,
+        alt=config['variants_thresh']['reads_alt'],
+        covg=config['variants_thresh']['coverage'],
+        idist=config['variants_thresh']['interpos_dist'],
+        maf=config['variants_thresh']['maf'],
+        qual=config['variants_thresh']['qual'],
     output:
-        'results/{species}/aligned_pseudogenomes/{sequencing}.fas',
+        'results/{species}/aligned_pseudogenomes/{sequencing}/{donor}.fas',
     resources:
         cpus_per_task=1,
         mem_mb=64_000,
@@ -25,6 +25,7 @@ rule pseudogenome_alignment:
                MAF_THRESHOLD={params.maf} \
                QUAL_THRESHOLD={params.qual} \
                SAMPLESHEET={input.samplesheet} \
+               DONOR={wildcards.donor} \
                SEQUENCING={wildcards.sequencing}
         duckdb -readonly {input.db} -c ".read workflow/scripts/finalize_variants.sql" > {output}
         '''
@@ -32,9 +33,9 @@ rule pseudogenome_alignment:
 
 rule extract_variant_sites:
     input:
-        ancient('results/{species}/aligned_pseudogenomes/{sequencing}.fas'),
+        'results/{species}/aligned_pseudogenomes/{sequencing}/{donor}.fas'
     output:
-        'results/{species}/snpsites/{sequencing}.filtered_alignment.fas',
+        'results/{species}/snpsites/{sequencing}/{donor}.filtered_alignment.fas',
     localrule: True
     envmodules:
         'snp-sites/2.5.1'
@@ -58,9 +59,9 @@ rule veryfasttree:
       - [GitHub](https://github.com/citiususc/veryfasttree)
     """
     input:
-        ancient('results/{species}/snpsites/{sequencing}.filtered_alignment.fas'),
+        'results/{species}/snpsites/{sequencing}/{donor}.filtered_alignment.fas',
     output:
-        'results/{species}/veryfasttree/{sequencing}.veryfasttree.phylogeny.nhx',
+        'results/{species}/veryfasttree/{sequencing}/{donor}.veryfasttree.phylogeny.nhx',
     resources:
         cpus_per_task=32,
         mem_mb=64_000,
@@ -73,6 +74,8 @@ rule veryfasttree:
         veryfasttree {input} -nt -threads {resources.cpus_per_task} > {output}
         '''
 
+
+# TODO: Add outgroup here
 
 rule raxml_ng:
     """Run RAxML-NG.
@@ -98,13 +101,13 @@ rule raxml_ng:
       - [GitHub](https://github.com/amkozlov/raxml-ng)
     """
     input:
-        ancient('results/{species}/snpsites/{sequencing}.filtered_alignment.fas'),
+        'results/{species}/snpsites/{sequencing}/{donor}.filtered_alignment.fas',
     params:
         extra='--all --model GTR+G --bs-trees 200',
-        prefix='results/{species}/raxml_ng/{sequencing}',
+        prefix='results/{species}/raxml_ng/{sequencing}/{donor}',
     output:
         multiext(
-            'results/{species}/raxml_ng/{sequencing}.raxml',
+            'results/{species}/raxml_ng/{sequencing}/{donor}.raxml',
             '.reduced.phy',
             '.rba',
             '.bestTreeCollapsed',
@@ -136,10 +139,11 @@ rule:
     input:
         expand(
             [
-                'results/{{species}}/veryfasttree/{sequencing}.veryfasttree.phylogeny.nhx',
-                'results/{{species}}/raxml_ng/{sequencing}.raxml.bestTree',
+                'results/{{species}}/veryfasttree/{sequencing}/{donor}.veryfasttree.phylogeny.nhx',
+                'results/{{species}}/raxml_ng/{sequencing}/{donor}.raxml.bestTree',
             ],
             sequencing=config['wildcards']['sequencing'].split('|'),
+            donor=config['wildcards']['donor'].split('|'),
         )
     output:
         touch('results/{species}/phylogenies.done')

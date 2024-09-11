@@ -1,6 +1,6 @@
 rule:
     input:
-        ancient('results/{species}/variants/{sample}.vcf.gz')
+        'results/{species}/variants/{sample}.vcf.gz',
     output:
         temp('results/{species}/variants/{sample}_af.tsv')
     resources:
@@ -18,9 +18,9 @@ rule:
 
 rule:
     input:
-        ancient('results/{species}/samtools/{sample}.sorted.bam')
+        'results/{species}/samtools/{sample}.sorted.bam',
     output:
-        'results/{species}/samtools/{sample}_genomecov.tsv'
+        temp('results/{species}/samtools/{sample}_genomecov.tsv')
     resources:
         cpus_per_task=2,
         runtime=5

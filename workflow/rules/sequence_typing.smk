@@ -1,3 +1,7 @@
+mlst_key = {
+    'Escherichia coli': 'Escherichia_coli#1',
+}
+
 use rule srst2 from widevariant as sequence_typing with:
     input:
         pe=multiext(
@@ -9,7 +13,7 @@ use rule srst2 from widevariant as sequence_typing with:
         prof=lambda wildcards: config['public_data']['mlst'][wildcards.species]['definitions'],
     params:
         extra='--forward "_1.trim" --reverse "_2.trim" --mlst_delimiter "_"',
-        species_alias=lambda wildcards: mlst_key[wildcards.species],
+        species_alias=lambda wildcards: config['public_data']['mlst'][wildcards.species]['alias'],
         prefix='results/{species}/mlst/{sample}'
     output:
         'results/{species}/mlst/{sample}__results.txt'
@@ -20,11 +24,11 @@ use rule srst2 from widevariant as sequence_typing with:
 def sequence_typing_output(wildcards):
     import pandas as pd
 
-    checkpoint_output = checkpoints.mapping_samplesheet.get(
-        species=wildcards.species,
-    ).output[0]
-
-    sample_ids = pd.read_csv(checkpoint_output)['sample'].astype(str)
+    sample_ids = pd.read_csv(
+        checkpoints.mapping_samplesheet.get(
+            species=wildcards.species,
+        ).output[0]
+    )['sample'].astype(str)
 
     return expand(
         'results/{{species}}/mlst/{sample}__results.txt',

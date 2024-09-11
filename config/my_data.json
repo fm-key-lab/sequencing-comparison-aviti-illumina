@@ -1,11 +1,11 @@
 {
   "data": {
     "aviti": {
-      "directory": "/u/thosi/dev/datasets/240704_B002_B001_Lib_AVITI_reseq/data",
+      "directory": "/nexus/posix0/MPIIB-keylab/240704_B002_B001_Lib_AVITI_reseq/data",
       "pat": "r'-\\d+_R([12]).fastq.gz'"
     },
     "illumina": {
-      "directory": "/u/thosi/dev/datasets/230913_B002_B001_Lib/data",
+      "directory": "/nexus/posix0/MPIIB-keylab/230913_B002_B001_Lib/data",
       "pat": "r'S\\d+_R([12])_001'"
     }
   },

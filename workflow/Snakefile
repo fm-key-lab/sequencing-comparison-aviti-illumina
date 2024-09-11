@@ -24,12 +24,19 @@ include: 'rules/prepare_results.smk'
 include: 'rules/prepare_report.smk'
 
 
+wildcard_constraints:
+    donors=config['wildcards']['donors'],
+    sequencing=config['wildcards']['sequencing'],
+    species=config['wildcards']['species']
+
+
 rule all:
     input:
         expand(
             'results/{species}/phylogenies.done',
-            species=['Ecoli']
-        )
+            species=config['wildcards']['species'].split('|')
+        ),
+        'report/main.pdf'
     localrule: True
     default_target: True
 

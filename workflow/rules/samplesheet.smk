@@ -1,12 +1,3 @@
-from utils import mlst_key, species_key
-
-
-wildcard_constraints:
-    donors=config['wildcards']['donors'],
-    sequencing=config['wildcards']['sequencing'],
-    species=config['wildcards']['species_tmp']
-
-
 rule:
     output:
         'resources/raw_samplesheet.xlsx'
@@ -28,7 +19,7 @@ checkpoint samplesheet:
     run:
         from utils import create_samplesheet
         
-        samplesheet = create_samplesheet(input[0], config['seq_data'])
+        samplesheet = create_samplesheet(input[0], config['data'])
         
         samplesheet = samplesheet[
             samplesheet['donor'].isin(config['wildcards']['donors'].split('|')) &
