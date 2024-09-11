@@ -63,7 +63,7 @@ rule veryfasttree:
     params:
         extra='-double-precision -nt'
     output:
-        'results/{species}/veryfasttree/{sequencing}/{donor}_2000.veryfasttree.phylogeny.nhx',
+        'results/{species}/veryfasttree/{sequencing}/{donor}_5000.veryfasttree.phylogeny.nhx',
     resources:
         cpus_per_task=32,
         mem_mb=64_000,
@@ -106,10 +106,10 @@ rule raxml_ng:
         'results/{species}/snpsites/{sequencing}/{donor}.filtered_alignment.fas',
     params:
         extra='--all --model GTR+G --bs-trees 200',
-        prefix='results/{species}/raxml_ng/{sequencing}/{donor}_2000',
+        prefix='results/{species}/raxml_ng/{sequencing}/{donor}_5000',
     output:
         multiext(
-            'results/{species}/raxml_ng/{sequencing}/{donor}_2000.raxml',
+            'results/{species}/raxml_ng/{sequencing}/{donor}_5000.raxml',
             '.reduced.phy',
             '.rba',
             '.bestTreeCollapsed',
@@ -139,12 +139,12 @@ rule:
     input:
         expand(
             [
-                'results/{{species}}/veryfasttree/{sequencing}/{donor}_2000.veryfasttree.phylogeny.nhx',
-                'results/{{species}}/raxml_ng/{sequencing}/{donor}_2000.raxml.bestTree',
+                'results/{{species}}/veryfasttree/{sequencing}/{donor}_5000.veryfasttree.phylogeny.nhx',
+                'results/{{species}}/raxml_ng/{sequencing}/{donor}_5000.raxml.bestTree',
             ],
             sequencing=config['wildcards']['sequencing'].split('|'),
             donor=config['wildcards']['donors'].split('|'),
         )
     output:
-        touch('results/{species}/phylogenies_2000.done')
+        touch('results/{species}/phylogenies_5000.done')
     localrule: True
