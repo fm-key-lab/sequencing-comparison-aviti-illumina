@@ -38,8 +38,8 @@ copy (
             from unpruned
             -- Filter SNVs by inter-position distance
             where
-                (last_pos is null or chrom_pos - last_pos > cast(getenv('INTERBASE_DISTANCE_THRESHOLD') as usmallint))
-                and (next_pos is null or next_pos - chrom_pos > cast(getenv('INTERBASE_DISTANCE_THRESHOLD') as usmallint))
+                (last_pos is null or chrom_pos - last_pos > cast(getenv('INTERBASE_DISTANCE_THRESHOLD') as ubigint))
+                and (next_pos is null or next_pos - chrom_pos > cast(getenv('INTERBASE_DISTANCE_THRESHOLD') as ubigint))
         ) selected
         cross join (
             -- Subset using sample info

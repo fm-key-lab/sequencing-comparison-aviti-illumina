@@ -2,7 +2,7 @@ rule:
     input:
         'results/{species}/variants/{sample}.vcf.gz',
     output:
-        temp('results/{species}/variants/{sample}_af.tsv')
+        'results/{species}/variants/{sample}_af.tsv'
     resources:
         cpus_per_task=2,
         runtime=5
@@ -20,7 +20,7 @@ rule:
     input:
         'results/{species}/samtools/{sample}.sorted.bam',
     output:
-        temp('results/{species}/samtools/{sample}_genomecov.tsv')
+        'results/{species}/samtools/{sample}_genomecov.tsv'
     resources:
         cpus_per_task=2,
         runtime=5
