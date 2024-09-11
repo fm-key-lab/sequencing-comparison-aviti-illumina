@@ -109,7 +109,10 @@ rule raxml_ng:
             '.rba',
             '.bestTreeCollapsed',
             '.bestTree',
+            '.mlTrees',
+            '.support',
             '.bestModel',
+            '.bootstraps',
             '.log'
         )
     resources:
@@ -121,6 +124,10 @@ rule raxml_ng:
     shell:
         '''
         export OMP_PLACES=threads
+        touch "{params.prefix}.raxml.reduced.phy" # May not be generated after SNP-Sites
+        touch "{params.prefix}.raxml.mlTrees" # May not be generated unless using bootstraps
+        touch "{params.prefix}.raxml.support" # 
+        touch "{params.prefix}.raxml.bootstraps" # 
         raxml-ng {params.extra} --msa {input} --threads {resources.cpus_per_task} --prefix {params.prefix}
         '''
 

@@ -16,6 +16,26 @@ rule:
         '''
 
 
+rule:
+    input:
+        ancient('results/{species}/samtools/{sample}.sorted.bam')
+    output:
+        'results/{species}/samtools/{sample}_genomecov.tsv'
+    resources:
+        cpus_per_task=2,
+        runtime=5
+    envmodules:
+        'bedtools/2.31.1'
+    shell:
+        '''
+        touch {output}
+        for strand in "+" "-"; do
+          genomeCoverageBed -bga -strand $strand -ibam {input} | \
+          awk -v strand=$strand '{{print $0, strand}}' OFS='\t' >> {output}
+        done
+        '''
+
+
 def candidate_variant_tables(wildcards):
     import pandas as pd
 
@@ -26,7 +46,10 @@ def candidate_variant_tables(wildcards):
     )['sample'].astype(str)
 
     return expand(
-        'results/{{species}}/variants/{sample}_af.tsv',
+        [
+            'results/{{species}}/variants/{sample}_af.tsv',
+            'results/{{species}}/samtools/{sample}_genomecov.tsv',
+        ]
         sample=sample_ids,
     )
 
@@ -35,7 +58,8 @@ rule:
     input:
         candidate_variant_tables
     params:
-        glob="'results/{species}/variants/*_af.tsv'",
+        af_glob="'results/{species}/variants/*_af.tsv'",
+        gc_glob="'results/{species}/samtools/*_genomecov.tsv'",
     output:
         'results/{species}/variants/candidate_variants.duckdb',
     resources:
@@ -48,6 +72,7 @@ rule:
     shell:
         '''
         export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB" \
-               BCFTOOLS_QUERY={params.glob}
+               BCFTOOLS_QUERY={params.af_glob} \
+               BEDTOOLS_GENOMECOV={params.gc_glob}
         duckdb {output} -c ".read workflow/scripts/create_variants_db.sql"
         '''
