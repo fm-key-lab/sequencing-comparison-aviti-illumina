@@ -17,9 +17,12 @@ checkpoint mapping_samplesheet:
         (
             samplesheet[species_mask]
             .filter(['sample', 'fastq_1', 'fastq_2'])
-            # TODO: bwa mem throws "paired reads have different names" error for sample 76.
-            #       temporarily excluding
-            .query('sample != 76')
+            # TODO: Duplicate ID errors for ID=B001_4186 (sample IDs 75, 76, 821, and 822)
+            # TODO: bwa mem throws "paired reads have different names" error for 
+            #       samples 75, 76, 821, and 822. Temporarily excluding.
+            #       sample 75 also has `Duplicate entry "NC_002695.2" in sam header`
+            #       Real issue is with ID name collision.
+            .query('sample != 75 & sample != 76 & sample != 821 & sample != 822')
             .to_csv(output[0], index=False)
         )
 
@@ -31,7 +34,7 @@ use rule bactmap from widevariant as mapping with:
     params:
         pipeline='bactmap',
         profile='singularity',
-        nxf='-work-dir "results/{species}/work" -config config/bactmap.config',
+        nxf='-work-dir results/{species}/work -config config/bactmap.config',
         outdir='results/{species}',
     output:
         'results/{species}/pipeline_info/pipeline_report.txt',

@@ -42,7 +42,6 @@ rule all:
 
 
 onstart:
-    shell('mkdir -p logs results')
     shell('find logs -type f ! -path "logs/notebooks/*" -delete')
     shell('rm -f .nextflow.log*')
 
