@@ -1,5 +1,5 @@
 executor: slurm
-jobs: 1
+jobs: 100
 latency-wait: 5
 slurm-init-seconds-before-status-checks: 5
 
@@ -8,7 +8,7 @@ keep-going: false
 printshellcmds: true
 
 software-deployment-method: env-modules
-# apptainer-args: "--bind '/u/thosi' --bind '/ptmp/thosi'"
+apptainer-args: "--bind '/u/thosi' --bind '/ptmp/thosi'"
 
 default-resources:
     slurm_account: "mib_cpu"
