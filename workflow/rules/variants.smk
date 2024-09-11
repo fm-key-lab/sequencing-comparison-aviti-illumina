@@ -49,7 +49,7 @@ def candidate_variant_tables(wildcards):
         [
             'results/{{species}}/variants/{sample}_af.tsv',
             'results/{{species}}/samtools/{sample}_genomecov.tsv',
-        ]
+        ],
         sample=sample_ids,
     )
 
