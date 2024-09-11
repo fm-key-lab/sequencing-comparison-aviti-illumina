@@ -106,7 +106,7 @@ rule raxml_ng:
         'results/{species}/snpsites/{sequencing}/{donor}.filtered_alignment.fas',
     params:
         extra='--all --model GTR+G --bs-trees 200',
-        prefix='results/{species}/raxml_ng/{sequencing}/{donor}',
+        prefix='results/{species}/raxml_ng/{sequencing}/{donor}_2000',
     output:
         multiext(
             'results/{species}/raxml_ng/{sequencing}/{donor}_2000.raxml',

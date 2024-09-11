@@ -74,9 +74,11 @@ rule record_variant_quality_scores:
 
 rule record_sequence_typing_results:
     input:
-        expand(
-            'results/{species}/mlst/.done',
-            species=config['wildcards']['species'].split('|')
+        ancient(
+            expand(
+                'results/{species}/mlst/.done',
+                species=config['wildcards']['species'].split('|')
+            )
         )
     params:
         mlst_glob='results/*/mlst/*[0-9][!a-zA-Z]__results.txt',
