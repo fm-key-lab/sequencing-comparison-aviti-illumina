@@ -1,6 +1,7 @@
 \documentclass{article}
 \renewcommand{\familydefault}{\sfdefault}
 
+\usepackage{amssymb}
 \usepackage{booktabs}
 \usepackage{float}
 \usepackage{geometry}
@@ -157,8 +158,51 @@ $ srst2 --input_pe {trimmed reads} --mlst_* '{Escherichia_coli#1}'
     \label{tab:st}
 \end{table}
 
-
 \section{Reconstructing phylogenies of dominant STs}
+
+We used \texttt{raxml-ng} to infer the phylogeny of samples from the dominant sequence type with pseudocode:
+
+\begin{lstlisting}[language=bash]
+$ raxml-ng --search1 --model GTR+G --outgroup {outgroup} --msa {msa}
+\end{lstlisting}
+
+We used $1000$ randomly sampled positions with an ALT allele called in at least 2 samples that met the following criteria:
+
+\begin{itemize}
+    \item No indels
+    \item $\geq 3$ reads supporting ALT on each strand
+    \item MAF $\geq .95$
+    \item QUAL $\geq 30$
+\end{itemize}
+
+A final phylogeny would use full pseudogenomes and estimate bootstrap intervals. We find that a low depth cut-off is required, otherwise many \textcolor{blue}{Illumina} (\textcolor{blue}{$\bullet$}) 
+calls are filtered out (\cref{figure:variant-call-disagree})
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.95\textwidth]{figures/variant-call-disagree}
+    \caption{
+        \textbf{Variant call disagreements} are mainly caused by combining the higher depth of AVITI and sequencing metrics thresholds. 
+        A case study of sample \texttt{B002-1276} shows that \textcolor{red}{AVITI} (\textcolor{red}{$\bullet$}) and \textcolor{blue}{Illumina} (\textcolor{blue}{$\bullet$}) call nearly
+        identical variants (agree $=\square$, disagree $=\blacksquare$) when the minimum required depth of a variant call (number of overlapping reads with the alt allele) is low (\textit{see left plot}).
+        For instance, at the cut-off $=8$, there is agreement at all but 15 sites (\textit{top-right plots}). 
+        Marker size is relative to sequencing depth; note the higher depth for \textcolor{red}{AVITI} (\textcolor{red}{$\bullet$}). 
+        At a higher cut-off value ($20$), there are now numerous disagreements (\textit{left and bottom-right plots}).
+    }
+    \label{figure:variant-call-disagree}
+\end{figure}
+
+The two sample phylogenies, from \textcolor{red}{AVITI} and \textcolor{blue}{Illumina}, show agreement (Robinson-Foulds agreement metric between two trees $=0.658$; \cref{figure:tree-metrics-comp}). 
+See a combined tree from a random subset of samples at \url{https://transfer.mpiib-berlin.mpg.de/f/14297709} (a more legible version with some samples highlighted is at \url{https://transfer.mpiib-berlin.mpg.de/f/14297708}).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{figures/tree-metrics-comp}
+    \caption{
+        \textbf{Comparing tree metrics} for AVITI and Illumina from trees built using \texttt{raxml-ng}.
+    }
+    \label{figure:tree-metrics-comp}
+\end{figure}
 
 \section{Appendix}
 
