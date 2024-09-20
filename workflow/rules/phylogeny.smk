@@ -63,7 +63,7 @@ rule veryfasttree:
     params:
         extra='-double-precision -nt'
     output:
-        'results/{species}/veryfasttree/{sequencing}/{donor}_5000.veryfasttree.phylogeny.nhx',
+        'results/{species}/veryfasttree/{sequencing}/{donor}.veryfasttree.phylogeny.nhx',
     resources:
         cpus_per_task=32,
         mem_mb=64_000,
@@ -77,8 +77,6 @@ rule veryfasttree:
         '''
 
 
-# TODO: Add outgroup here
-
 rule raxml_ng:
     """Run RAxML-NG.
 
@@ -89,14 +87,16 @@ rule raxml_ng:
 
     Returns:
       {{ prefix }}.raxml.reduced.phy: Reduced alignment (with duplicates 
-        and gap-only sites/taxa removed)
+        and gap-only sites/taxa removed) [OPTIONAL]
       {{ prefix }}.raxml.rba: Binary MSA file
-      {{ prefix }}.raxml.bestTreeCollapsed: Best ML tree with collapsed near-zero branches
+      {{ prefix }}.raxml.bestTreeCollapsed: Best ML tree with collapsed 
+        near-zero branches [OPTIONAL]
       {{ prefix }}.raxml.bestTree: Best ML tree
       {{ prefix }}.raxml.mlTrees: All ML trees
-      {{ prefix }}.raxml.support: Best ML tree with Felsenstein bootstrap (FBP) support
+      {{ prefix }}.raxml.support: Best ML tree with Felsenstein bootstrap 
+        (FBP) support [OPTIONAL, with bootstrap]
       {{ prefix }}.raxml.bestModel: Optimized model
-      {{ prefix }}.raxml.bootstraps: Bootstrap trees
+      {{ prefix }}.raxml.bootstraps: Bootstrap trees [OPTIONAL, with bootstrap]
       {{ prefix }}.raxml.log: Execution log
     
     Notes:
@@ -106,10 +106,11 @@ rule raxml_ng:
         'results/{species}/snpsites/{sequencing}/{donor}.filtered_alignment.fas',
     params:
         extra='--all --model GTR+G --bs-trees 200',
-        prefix='results/{species}/raxml_ng/{sequencing}/{donor}_5000',
+        outgroup=lambda wildcards: '--outgroup ' + config['outgroup'][wildcards.donor][wildcards.species]['ID'],
+        prefix='results/{species}/raxml_ng/{sequencing}/{donor}',
     output:
         multiext(
-            'results/{species}/raxml_ng/{sequencing}/{donor}_5000.raxml',
+            'results/{species}/raxml_ng/{sequencing}/{donor}.raxml',
             '.reduced.phy',
             '.rba',
             '.bestTreeCollapsed',
@@ -129,8 +130,13 @@ rule raxml_ng:
     shell:
         '''
         export OMP_PLACES=threads
-        raxml-ng {params.extra} --msa {input} --threads {resources.cpus_per_task} --prefix {params.prefix} --redo
-        # `reduced.phy` may not be generated after SNP-Sites' `raxml.mlTrees`, etc. not generated unless bootstraping
+        raxml-ng \
+          {params.extra} \
+          {params.outgroup} \
+          --msa {input} \
+          --threads {resources.cpus_per_task} \
+          --prefix {params.prefix} \
+          --redo
         touch {output}
         '''
 
@@ -139,12 +145,12 @@ rule:
     input:
         expand(
             [
-                'results/{{species}}/veryfasttree/{sequencing}/{donor}_5000.veryfasttree.phylogeny.nhx',
-                'results/{{species}}/raxml_ng/{sequencing}/{donor}_5000.raxml.bestTree',
+                'results/{{species}}/veryfasttree/{sequencing}/{donor}.veryfasttree.phylogeny.nhx',
+                'results/{{species}}/raxml_ng/{sequencing}/{donor}.raxml.bestTree',
             ],
             sequencing=config['wildcards']['sequencing'].split('|'),
             donor=config['wildcards']['donors'].split('|'),
         )
     output:
-        touch('results/{species}/phylogenies_5000.done')
+        touch('results/{species}/phylogenies.done')
     localrule: True

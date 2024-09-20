@@ -12,7 +12,7 @@ use rule srst2 from widevariant as sequence_typing with:
         species_alias=lambda wildcards: config['public_data']['mlst'][wildcards.species]['alias'],
         prefix='results/{species}/mlst/{sample}'
     output:
-        'results/{species}/mlst/{sample}__results.txt'
+        'results/{species}/mlst/{sample}__results.txt',
     envmodules:
         'srst2/0.2.0'
 

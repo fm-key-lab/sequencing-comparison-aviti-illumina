@@ -3,6 +3,7 @@ OUTPUT = [
     'sequence_typing',
     'total_reads',
     'variant_quality_scores',
+    'variant_tables',
 ]
 
 
@@ -93,6 +94,33 @@ rule record_sequence_typing_results:
         '''
         export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB" MLST_RESULTS="{params.mlst_glob}"
         duckdb {output} -c ".read workflow/scripts/parse_srst2_output.sql"
+        '''
+
+
+rule record_variant_tables:
+    input:
+        ancient(
+            expand(
+                'results/{species}/variants/candidate_variants.duckdb',
+                species=config['wildcards']['species'].split('|')
+            ),
+        )
+    output:
+        temp('results/variant_tables.duckdb'),
+    resources:
+        cpus_per_task=32,
+        mem_mb=48_000,
+        runtime=15
+    shell:
+        '''
+        for db in {input}; do
+          duckdb -s "\
+            set memory_limit = '$(({resources.mem_mb} / 1000))GB';
+            set threads = {resources.cpus_per_task};
+            attach '{output}' as variant_tables_db;
+            attach '${{db}}' as species_db;
+            copy from database species_db to variant_tables_db;"
+        done
         '''
 
 

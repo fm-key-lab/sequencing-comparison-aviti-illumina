@@ -5,6 +5,7 @@
     "species": "Escherichia_coli"
   },
   "variants_thresh": {
+    "base_qual": 30,
     "reads_alt": 3,
     "coverage": 20,
     "interpos_dist": 500,
@@ -18,23 +19,24 @@
   },
   "outgroup": {
     "B001": {
-      "species": {
-        "Escherichia_coli": {
-          "ID": "B002"
-        },
-        "Bifidobacterium breve": {
-          "ID": "B002"
-        }
+      "Escherichia_coli": {
+        "ID": "B002"
+      },
+      "Bifidobacterium breve": {
+        "ID": "B002"
       }
     },
     "B002": {
-      "species": {
-        "Escherichia_coli": {
-          "ID": "B001_0272"
+      "Escherichia_coli": {
+        "aviti": {
+          "ID": "B001_4022_illumina"
         },
-        "Bifidobacterium breve": {
-          "ID": "B001"
+        "illumina": {
+          "ID": "B001_4022_aviti"
         }
+      },
+      "Bifidobacterium breve": {
+        "ID": "B001"
       }
     }
   },
