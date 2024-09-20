@@ -11,6 +11,8 @@ report/*
 # Log directories, caches
 # -----------------------
 logs/*
+archive
+dev
 
 # Nextflow
 .nextflow

@@ -1,68 +1,156 @@
-def pseudogenomes_input(wildcards):
-    """Align samples from the same cohorts, species."""
-    import pandas as pd
-
-    samplesheet = pd.read_csv(
-        checkpoints.samplesheet.get(
-            species=wildcards.species,
-        ).output[0]
-    )
-
-    sample_ids = samplesheet[
-        samplesheet['group'] == wildcards.group
-    ]['sample'].astype(str)
-
-    return expand(
-        'results/{{species}}/{{group}}/pseudogenomes/{sample}.fas',
-        sample=sample_ids
-    )
-
-
-rule align_pseudogenomes:
+rule pseudogenome_alignment:
     input:
-        pseudogenomes_input
-    output:
-        aligned='results/{species}/{group}/aligned_pseudogenomes/aligned_pseudogenome.fas',
-        reference_single_sequence='results/{species}/{group}/aligned_pseudogenomes/final_reference.fas',
+        samplesheet='results/samplesheet.csv',
+        db='results/{species}/variants/candidate_variants.duckdb',
     params:
-        reference=lambda wildcards: config['public_data']['reference'][wildcards.species],
+        alt=config['variants_thresh']['reads_alt'],
+        covg=config['variants_thresh']['coverage'],
+        idist=config['variants_thresh']['interpos_dist'],
+        maf=config['variants_thresh']['maf'],
+        qual=config['variants_thresh']['qual'],
+    output:
+        'results/{species}/aligned_pseudogenomes/{sequencing}/{donor}.fas',
+    resources:
+        cpus_per_task=1,
+        mem_mb=64_000,
+        runtime=30,
     envmodules:
-        'sandbox'
+        'duckdb/nightly'
     shell:
         '''
-        touch {output.aligned}
-        for pseudogenome in {input}
-        do
-            cat $pseudogenome >> {output.aligned}
-        done
-        python workflow/scripts/reference2single_sequence.py \
-          -r {params.reference} \
-          -o {output.reference_single_sequence}
-        cat {output.reference_single_sequence} >> {output.aligned}
+        export MEMORY_LIMIT="$(({resources.mem_mb} / 1100))GB" \
+               ALT_STRAND_DP_THRESHOLD={params.alt} \
+               COVERAGE_THRESHOLD={params.covg} \
+               INTERBASE_DISTANCE_THRESHOLD={params.idist} \
+               MAF_THRESHOLD={params.maf} \
+               QUAL_THRESHOLD={params.qual} \
+               SAMPLESHEET={input.samplesheet} \
+               DONOR={wildcards.donor} \
+               SEQUENCING={wildcards.sequencing}
+        duckdb -readonly {input.db} -c ".read workflow/scripts/finalize_variants.sql" > {output}
         '''
 
 
-use rule gubbins from widevariant as build_tree with:
+rule extract_variant_sites:
     input:
-        'results/{species}/{group}/aligned_pseudogenomes/aligned_pseudogenome.fas',
-    params:
-        f=config['gubbins']['filter_percentage'],
-        tree_args=config['gubbins']['tree_args'],
-        t=config['gubbins']['tree_builder']
+        'results/{species}/aligned_pseudogenomes/{sequencing}/{donor}.fas'
     output:
-        'results/{species}/{group}/gubbins/prefix.final_tree.tre',
+        'results/{species}/snpsites/{sequencing}/{donor}.filtered_alignment.fas',
+    localrule: True
     envmodules:
-        'intel/21.2.0',
-        'impi/2021.2',
-        'gubbins/3.3.5'
+        'snp-sites/2.5.1'
+    shell:
+        '''
+        snp-sites -o {output} {input}
+        '''
+
+
+rule veryfasttree:
+    """Run VeryFastTree.
+
+    Build a phylogeny from the multiple sequence alignment using the 
+    VeryFastTree implementation of the FastTree-2 algorithm.
+
+    Args:
+
+    Returns:
+    
+    Notes:
+      - [GitHub](https://github.com/citiususc/veryfasttree)
+    """
+    input:
+        'results/{species}/snpsites/{sequencing}/{donor}.filtered_alignment.fas',
+    params:
+        extra='-double-precision -nt'
+    output:
+        'results/{species}/veryfasttree/{sequencing}/{donor}.veryfasttree.phylogeny.nhx',
+    resources:
+        cpus_per_task=32,
+        mem_mb=64_000,
+        runtime=30,
+    envmodules:
+        'veryfasttree/4.0.3.1'
+    shell:
+        '''
+        export OMP_PLACES=threads
+        veryfasttree {input} {params.extra} -threads {resources.cpus_per_task} > {output}
+        '''
+
+
+rule raxml_ng:
+    """Run RAxML-NG.
+
+    Build a maximum-likelihood phylogeny from the multiple sequence alignment 
+    using RAxML Next Generation.
+
+    Args:
+
+    Returns:
+      {{ prefix }}.raxml.reduced.phy: Reduced alignment (with duplicates 
+        and gap-only sites/taxa removed) [OPTIONAL]
+      {{ prefix }}.raxml.rba: Binary MSA file
+      {{ prefix }}.raxml.bestTreeCollapsed: Best ML tree with collapsed 
+        near-zero branches [OPTIONAL]
+      {{ prefix }}.raxml.bestTree: Best ML tree
+      {{ prefix }}.raxml.mlTrees: All ML trees
+      {{ prefix }}.raxml.support: Best ML tree with Felsenstein bootstrap 
+        (FBP) support [OPTIONAL, with bootstrap]
+      {{ prefix }}.raxml.bestModel: Optimized model
+      {{ prefix }}.raxml.bootstraps: Bootstrap trees [OPTIONAL, with bootstrap]
+      {{ prefix }}.raxml.log: Execution log
+    
+    Notes:
+      - [GitHub](https://github.com/amkozlov/raxml-ng)
+    """
+    input:
+        'results/{species}/snpsites/{sequencing}/{donor}.filtered_alignment.fas',
+    params:
+        extra='--all --model GTR+G --bs-trees 200',
+        outgroup=lambda wildcards: '--outgroup ' + config['outgroup'][wildcards.donor][wildcards.species]['ID'],
+        prefix='results/{species}/raxml_ng/{sequencing}/{donor}',
+    output:
+        multiext(
+            'results/{species}/raxml_ng/{sequencing}/{donor}.raxml',
+            '.reduced.phy',
+            '.rba',
+            '.bestTreeCollapsed',
+            '.bestTree',
+            '.mlTrees',
+            '.support',
+            '.bestModel',
+            '.bootstraps',
+            '.log'
+        )
+    resources:
+        cpus_per_task=48,
+        mem_mb=64_000,
+        runtime=120,
+    envmodules:
+        'raxml-ng/1.2.2_MPI'
+    shell:
+        '''
+        export OMP_PLACES=threads
+        raxml-ng \
+          {params.extra} \
+          {params.outgroup} \
+          --msa {input} \
+          --threads {resources.cpus_per_task} \
+          --prefix {params.prefix} \
+          --redo
+        touch {output}
+        '''
 
 
 rule:
     input:
         expand(
-            'results/{{species}}/{group}/gubbins/prefix.final_tree.tre',
-            group=config['wildcards']['sequencing'].split('|'),
+            [
+                'results/{{species}}/veryfasttree/{sequencing}/{donor}.veryfasttree.phylogeny.nhx',
+                'results/{{species}}/raxml_ng/{sequencing}/{donor}.raxml.bestTree',
+            ],
+            sequencing=config['wildcards']['sequencing'].split('|'),
+            donor=config['wildcards']['donors'].split('|'),
         )
     output:
-        touch('results/{species}/phylogeny.done')
+        touch('results/{species}/phylogenies.done')
     localrule: True

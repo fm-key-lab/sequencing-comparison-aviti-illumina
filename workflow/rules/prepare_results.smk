@@ -3,6 +3,7 @@ OUTPUT = [
     'sequence_typing',
     'total_reads',
     'variant_quality_scores',
+    'variant_tables',
 ]
 
 
@@ -32,7 +33,7 @@ rule record_total_reads:
     input:
         expand(
             'results/{species}/multiqc/multiqc_data/multiqc_fastp.yaml',
-            species=config['wildcards']['species_tmp'].split('|')
+            species=config['wildcards']['species'].split('|')
         )
     output:
         temp('results/total_reads.duckdb'),
@@ -54,7 +55,7 @@ rule record_variant_quality_scores:
     input:
         expand(
             'results/{species}/multiqc/multiqc_data/mqc_bcftools_stats_vqc_Count_SNP.yaml',
-            species=config['wildcards']['species_tmp'].split('|')
+            species=config['wildcards']['species'].split('|')
         )
     output:
         temp('results/variant_quality_scores.duckdb'),
@@ -74,9 +75,11 @@ rule record_variant_quality_scores:
 
 rule record_sequence_typing_results:
     input:
-        expand(
-            'results/{species}/mlst/.done',
-            species=config['wildcards']['species_tmp'].split('|')
+        ancient(
+            expand(
+                'results/{species}/mlst/.done',
+                species=config['wildcards']['species'].split('|')
+            )
         )
     params:
         mlst_glob='results/*/mlst/*[0-9][!a-zA-Z]__results.txt',
@@ -89,9 +92,35 @@ rule record_sequence_typing_results:
         'duckdb/nightly'
     shell:
         '''
-        export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB"
-        export MLST_RESULTS="{params.mlst_glob}"
+        export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB" MLST_RESULTS="{params.mlst_glob}"
         duckdb {output} -c ".read workflow/scripts/parse_srst2_output.sql"
+        '''
+
+
+rule record_variant_tables:
+    input:
+        ancient(
+            expand(
+                'results/{species}/variants/candidate_variants.duckdb',
+                species=config['wildcards']['species'].split('|')
+            ),
+        )
+    output:
+        temp('results/variant_tables.duckdb'),
+    resources:
+        cpus_per_task=32,
+        mem_mb=48_000,
+        runtime=15
+    shell:
+        '''
+        for db in {input}; do
+          duckdb -s "\
+            set memory_limit = '$(({resources.mem_mb} / 1000))GB';
+            set threads = {resources.cpus_per_task};
+            attach '{output}' as variant_tables_db;
+            attach '${{db}}' as species_db;
+            copy from database species_db to variant_tables_db;"
+        done
         '''
 
 

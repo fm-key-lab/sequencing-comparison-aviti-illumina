@@ -3,5 +3,6 @@
 ## Usage
 
 ```bash
-$GROUP_HOME/tools/utility-scripts/pre_smk.sh "sequencing-comparison-aviti-illumina" " -n"
+module load task
+task -t $GROUP_HOME/tools/lab-tasks smk:run PROJ="sequencing-comparison-aviti-illumina" BRANCH="cmt-support" EXTRA=" -n"
 ```

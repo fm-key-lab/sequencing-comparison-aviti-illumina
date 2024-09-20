@@ -20,19 +20,6 @@ donors_key = {
     'Control9': 'Control',
 }
 
-species_key = {
-    'Ecoli': 'Escherichia coli',
-    'Bifido': 'Bifidobacterium spp',
-    'Bovatus': 'Bacteroides ovatus/xylanisolvens',
-    'Efaecalis': 'Enterococcus faecalis',
-    'Koxytoca': 'Klebsiella oxytoca',
-    'Control': None
-}
-
-mlst_key = {
-    'Ecoli': 'Escherichia_coli#1',
-}
-
 
 def extract_donor_id(s):
     donor_pattern = r"([BP]\d+|Ctr\d+|Control\d+)_\d+"
@@ -102,7 +89,5 @@ def create_samplesheet(input_path, seq_info):
 
 __all__ = [
     donors_key,
-    species_key,
-    mlst_key,
     create_samplesheet,
 ]
