@@ -1,6 +1,6 @@
-rule:
+rule bcftools_fill_af_tag_query:
     input:
-        'results/{species}/variants/{sample}.vcf.gz',
+        ancient('results/{species}/variants/{sample}.vcf.gz'),
     output:
         'results/{species}/variants/{sample}_af.tsv'
     resources:
@@ -16,9 +16,9 @@ rule:
         '''
 
 
-rule:
+rule genome_coverage_bed:
     input:
-        'results/{species}/samtools/{sample}.sorted.bam',
+        ancient('results/{species}/samtools/{sample}.sorted.bam'),
     output:
         'results/{species}/samtools/{sample}_genomecov.tsv'
     resources:
@@ -57,7 +57,7 @@ def candidate_variant_tables(wildcards):
 
 rule:
     input:
-        candidate_variant_tables
+        ancient(candidate_variant_tables)
     params:
         af_glob="'results/{species}/variants/*_af.tsv'",
         gc_glob="'results/{species}/samtools/*_genomecov.tsv'",
