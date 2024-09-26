@@ -1,3 +1,5 @@
+.bail on
+
 set memory_limit = getenv('MEMORY_LIMIT');
 set threads = getenv('SLURM_CPUS_PER_TASK');
 

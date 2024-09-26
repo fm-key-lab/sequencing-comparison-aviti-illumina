@@ -21,7 +21,7 @@ rule record_samples:
     shell:
         '''
         duckdb {output} -s \
-          "set memory_limit = '$(({resources.mem_mb} / 1000))GB';
+          "set memory_limit = '$(({resources.mem_mb} / 1100))GB';
           set threads = {resources.cpus_per_task};
           create table samplesheet as 
           select * 
@@ -45,7 +45,7 @@ rule record_total_reads:
         'duckdb/nightly'
     shell:
         '''
-        export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB"
+        export MEMORY_LIMIT="$(({resources.mem_mb} / 1100))GB"
         yq -o=csv '.[] | [key, .summary.before_filtering.total_reads, .summary.after_filtering.total_reads]' {input} |\
           duckdb {output} -c ".read workflow/scripts/parse_fastp_multiqc_output.sql"
         '''
@@ -67,7 +67,7 @@ rule record_variant_quality_scores:
         'duckdb/nightly'
     shell:
         '''
-        export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB"
+        export MEMORY_LIMIT="$(({resources.mem_mb} / 1100))GB"
         yq -o=csv 'to_entries[] | .key as $sample | .value | to_entries[] | [$sample, .key, .value]' {input} |\
           duckdb {output} -c ".read workflow/scripts/parse_bcftools_variant_quality.sql"
         '''
@@ -92,7 +92,7 @@ rule record_sequence_typing_results:
         'duckdb/nightly'
     shell:
         '''
-        export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB" MLST_RESULTS="{params.mlst_glob}"
+        export MEMORY_LIMIT="$(({resources.mem_mb} / 1100))GB" MLST_RESULTS="{params.mlst_glob}"
         duckdb {output} -c ".read workflow/scripts/parse_srst2_output.sql"
         '''
 
@@ -115,7 +115,7 @@ rule record_variant_tables:
         '''
         for db in {input}; do
           duckdb -s "\
-            set memory_limit = '$(({resources.mem_mb} / 1000))GB';
+            set memory_limit = '$(({resources.mem_mb} / 1100))GB';
             set threads = {resources.cpus_per_task};
             attach '{output}' as variant_tables_db;
             attach '${{db}}' as species_db;
@@ -146,7 +146,7 @@ rule:
         '''
         for db in {input}; do
           duckdb -s "\
-          set memory_limit = '$(({resources.mem_mb} / 1000))GB';
+          set memory_limit = '$(({resources.mem_mb} / 1100))GB';
           set threads = {resources.cpus_per_task};
           attach '{output}' as results_db;
           attach '${{db}}' as output_db;

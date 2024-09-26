@@ -6,7 +6,6 @@ rule bcftools_fill_af_tag_query:
     resources:
         cpus_per_task=2,
         runtime=5
-    localrule: False
     envmodules:
         'bcftools/1.20'
     shell:
@@ -67,12 +66,11 @@ rule create_variants_db:
         cpus_per_task=32,
         mem_mb=48_000,
         runtime=15
-    localrule: False
     envmodules:
         'duckdb/nightly'
     shell:
         '''
-        export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB" \
+        export MEMORY_LIMIT="$(({resources.mem_mb} / 1100))GB" \
                BCFTOOLS_QUERY={params.af_glob} \
                BEDTOOLS_GENOMECOV={params.gc_glob}
         
