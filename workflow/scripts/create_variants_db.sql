@@ -1,5 +1,3 @@
-.bail on
-
 set memory_limit = getenv('MEMORY_LIMIT');
 set threads = getenv('SLURM_CPUS_PER_TASK');
 
@@ -62,10 +60,10 @@ from read_csv(
 -- where strlen(alt) >= 1;
 ;
 
+-- TODO: Add metadata on calling, code, etc.
+
 create type samples as enum (
     select distinct("sample") from candidate_variant_tbl
 );
 
 alter table candidate_variant_tbl alter "sample" type samples;
-
--- TODO: Add metadata on calling, code, etc.
