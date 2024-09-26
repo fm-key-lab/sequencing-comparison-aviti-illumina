@@ -55,7 +55,7 @@ def candidate_variant_tables(wildcards):
     )
 
 
-rule:
+rule create_variants_db:
     input:
         ancient(candidate_variant_tables)
     params:
