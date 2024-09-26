@@ -12,7 +12,7 @@ rule:
     shell:
         '''
         bcftools +fill-tags {input} -- -t AF | \
-        bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE]\t%QUAL\t%DP\t%INFO/DP4\n' > {output}
+          bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE]\t%QUAL\t%DP\t%INFO/DP4\n' > {output}
         '''
 
 
@@ -29,6 +29,7 @@ rule:
     shell:
         '''
         touch {output}
+        
         for strand in "+" "-"; do
           genomeCoverageBed -bga -strand $strand -ibam {input} | \
           awk -v strand=$strand '{{print $0, strand}}' OFS='\t' >> {output}
@@ -61,7 +62,7 @@ rule:
         af_glob="'results/{species}/variants/*_af.tsv'",
         gc_glob="'results/{species}/samtools/*_genomecov.tsv'",
     output:
-        'results/{species}/variants/candidate_variants.duckdb',
+        'results/{species}/variants.duckdb',
     resources:
         cpus_per_task=32,
         mem_mb=48_000,
@@ -74,5 +75,6 @@ rule:
         export MEMORY_LIMIT="$(({resources.mem_mb} / 1000))GB" \
                BCFTOOLS_QUERY={params.af_glob} \
                BEDTOOLS_GENOMECOV={params.gc_glob}
+        
         duckdb {output} -c ".read workflow/scripts/create_variants_db.sql"
         '''

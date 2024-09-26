@@ -33,10 +33,9 @@ wildcard_constraints:
 rule all:
     input:
         expand(
-            'results/{species}/phylogenies_5000.done',
+            'results/{species}/variants.duckdb',
             species=config['wildcards']['species'].split('|')
-        ),
-        'report/main.pdf'
+        )
     localrule: True
     default_target: True
 
@@ -50,8 +49,7 @@ onsuccess:
     shell(f'mkdir -p "/r/t/thosi/{config['run_id']}"')
     shell(f'rsync -au --progress report "/r/t/thosi/{config['run_id']}/"')
 
-    # TODO: Should specify what's tranferred (e.g., leave `results/../work` from nf behind).
-    # shell(f'rsync -au --progress --exclude "work" results "/r/t/thosi/{config['run_id']}/"')
-    
     # Clean up compiled report
-    shell('rm -f report/main.pdf')
+    shell(f'rm -f "report/main.{config['run_id']}.$(date +"%Y%m%d").pdf"')
+    shell(f'touch report/main.pdf')
+    shell(f'mv report/main.pdf "report/main.{config['run_id']}.$(date +"%Y%m%d").pdf"')

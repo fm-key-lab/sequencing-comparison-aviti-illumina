@@ -10,11 +10,23 @@ create table candidate_variant_tbl as
 select 
 	"sample"
 	, cast(chrom as chroms) as chrom
-	, cast(chrom_pos as ubigint) as chrom_pos
+	, chrom_pos
 	, ref
 	, alt
+	, cast(split_part(info_dp4, ',', 1) as usmallint) as ref_fwd_dp
+	, cast(split_part(info_dp4, ',', 2) as usmallint) as ref_rev_dp
 	, cast(split_part(info_dp4, ',', 3) as usmallint) as alt_fwd_dp
 	, cast(split_part(info_dp4, ',', 4) as usmallint) as alt_rev_dp
+	, (
+		cast(split_part(info_dp4, ',', 1) as usmallint) + 
+		cast(split_part(info_dp4, ',', 2) as usmallint)
+	) / array_reduce(
+		array_transform(
+			regexp_split_to_array(info_dp4, ','), 
+			x -> cast(x as usmallint)
+		), 
+		(x, y) -> x + y
+	) as ref_af
 	, (
 		cast(split_part(info_dp4, ',', 3) as usmallint) + 
 		cast(split_part(info_dp4, ',', 4) as usmallint)
@@ -24,7 +36,7 @@ select
 			x -> cast(x as usmallint)
 		), 
 		(x, y) -> x + y
-	) as maf
+	) as alt_af
 	, cast(qual as decimal(4, 1)) as qual
 	, dp
 	, info_dp4
@@ -34,7 +46,7 @@ from read_csv(
 	delim = '\t',
 	columns = {
 		'chrom': 'varchar',
-		'chrom_pos': 'bigint',
+		'chrom_pos': 'ubigint',
 		'ref': 'varchar',
 		'alt': 'varchar',
 		'sample': 'varchar',
@@ -45,7 +57,8 @@ from read_csv(
 	nullstr = '.',
 	auto_detect = false
 )
-where strlen(alt) >= 1;
+-- where strlen(alt) >= 1;
+;
 
 create type samples as enum (
     select distinct("sample") from candidate_variant_tbl
