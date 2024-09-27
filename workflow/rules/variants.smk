@@ -2,7 +2,7 @@ rule bcftools_fill_af_tag_query:
     input:
         ancient('results/{species}/variants/{sample}.vcf.gz'),
     output:
-        'results/{species}/variants/{sample}_af.tsv'
+        'results/{species}/variants/{sample}_afreq.tsv'
     resources:
         cpus_per_task=2,
         runtime=5
@@ -11,7 +11,7 @@ rule bcftools_fill_af_tag_query:
     shell:
         '''
         bcftools +fill-tags {input} -- -t AF | \
-          bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE]\t%QUAL\t%DP\t%INFO/DP4\n' > {output}
+          bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE]\t%QUAL\t%INFO\t%DP\t%INFO/DP4\n' > {output}
         '''
 
 
@@ -47,7 +47,7 @@ def candidate_variant_tables(wildcards):
 
     return expand(
         [
-            'results/{{species}}/variants/{sample}_af.tsv',
+            'results/{{species}}/variants/{sample}_afreq.tsv',
             'results/{{species}}/samtools/{sample}_genomecov.tsv',
         ],
         sample=sample_ids,
@@ -58,19 +58,19 @@ rule create_variants_db:
     input:
         ancient(candidate_variant_tables)
     params:
-        af_glob="'results/{species}/variants/*_af.tsv'",
+        af_glob="'results/{species}/variants/*_afreq.tsv'",
         gc_glob="'results/{species}/samtools/*_genomecov.tsv'",
     output:
-        'results/{species}/variants.duckdb',
+        'results/{species}/all_variants.duckdb',
     resources:
         cpus_per_task=32,
-        mem_mb=64_000,
+        mem_mb=96_000,
         runtime=30
     envmodules:
         'duckdb/nightly'
     shell:
         '''
-        export MEMORY_LIMIT="$(({resources.mem_mb} / 1100))GB" \
+        export MEMORY_LIMIT="$(({resources.mem_mb} / 1200))GB" \
                BCFTOOLS_QUERY={params.af_glob} \
                BEDTOOLS_GENOMECOV={params.gc_glob}
         

@@ -33,7 +33,7 @@ wildcard_constraints:
 rule all:
     input:
         expand(
-            'results/{species}/variants.duckdb',
+            'results/{species}/all_variants.duckdb',
             species=config['wildcards']['species'].split('|')
         )
     localrule: True
