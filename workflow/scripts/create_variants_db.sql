@@ -51,6 +51,7 @@ from read_csv(
 		'alt': 'varchar',
 		'sample': 'varchar',
 		'qual': 'double',
+		'info': 'varchar',
 		'dp': 'bigint',
 		'info_dp4': 'varchar'
 	},
