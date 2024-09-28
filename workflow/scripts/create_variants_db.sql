@@ -58,8 +58,8 @@ from read_csv(
 	nullstr = '.',
 	auto_detect = false
 )
--- where strlen(alt) >= 1;
-;
+-- NOTE: INDELs are filtered out
+where info not ilike '%INDEL%';
 
 -- TODO: Add metadata on calling, code, etc.
 
