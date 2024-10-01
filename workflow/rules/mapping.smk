@@ -14,17 +14,13 @@ checkpoint mapping_samplesheet:
         else:
             species_mask = samplesheet['species'] == wildcards.species
 
-        (
-            samplesheet[species_mask]
-            .filter(['sample', 'fastq_1', 'fastq_2'])
-            # TODO: Duplicate ID errors for ID=B001_4186 (sample IDs 75, 76, 821, and 822)
-            # TODO: bwa mem throws "paired reads have different names" error for 
-            #       samples 75, 76, 821, and 822. Temporarily excluding.
-            #       sample 75 also has `Duplicate entry "NC_002695.2" in sam header`
-            #       Real issue is with ID name collision.
-            .query('sample != 75 & sample != 76 & sample != 821 & sample != 822')
-            .to_csv(output[0], index=False)
-        )
+        mapping_samplesheet = samplesheet[species_mask].filter(['sample', 'fastq_1', 'fastq_2'])
+        
+        mapping_samplesheet = mapping_samplesheet[
+            ~mapping_samplesheet['sample'].astype(int).isin(EXCLUDE)
+        ]
+
+        mapping_samplesheet.to_csv(output[0], index=False)
 
 
 use rule bactmap from widevariant as mapping with:

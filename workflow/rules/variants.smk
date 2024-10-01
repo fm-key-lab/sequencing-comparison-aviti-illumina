@@ -39,18 +39,32 @@ rule genome_coverage_bed:
 def candidate_variant_tables(wildcards):
     import pandas as pd
 
-    sample_ids = pd.read_csv(
-        checkpoints.mapping_samplesheet.get(
-            species=wildcards.species,
+    samplesheet = pd.read_csv(
+        checkpoints.samplesheet.get(
+            **wildcards,
         ).output[0]
-    )['sample'].astype(str)
+    )
 
-    return expand(
-        [
-            'results/{{species}}/variants/{sample}_afreq.tsv',
-            'results/{{species}}/samtools/{sample}_genomecov.tsv',
-        ],
-        sample=sample_ids,
+    samplesheet = samplesheet[
+        ~samplesheet['sample'].astype(int).isin(EXCLUDE)
+    ]
+
+    return list(
+        samplesheet
+        [samplesheet['species'].isin(config['wildcards']['species'].split('|'))]
+        .filter(['sample', 'species'])
+        .drop_duplicates()
+        .transpose()
+        .apply(
+            lambda df: [
+                output_fn.format(**df.to_dict()) for output_fn in [
+                    'results/{species}/variants/{sample}_afreq.tsv',
+                    'results/{species}/samtools/{sample}_genomecov.tsv'
+                ]
+            ]
+        )
+        .values
+        .flatten()
     )
 
 
@@ -58,10 +72,9 @@ rule create_variants_db:
     input:
         ancient(candidate_variant_tables)
     params:
-        af_glob="'results/{species}/variants/*_afreq.tsv'",
-        gc_glob="'results/{species}/samtools/*_genomecov.tsv'",
+        af_glob="'results/*/variants/*_afreq.tsv'"
     output:
-        'results/{species}/all_variants.duckdb',
+        'results/variants.duckdb',
     resources:
         cpus_per_task=32,
         mem_mb=96_000,
@@ -71,8 +84,7 @@ rule create_variants_db:
     shell:
         '''
         export MEMORY_LIMIT="$(({resources.mem_mb} / 1200))GB" \
-               BCFTOOLS_QUERY={params.af_glob} \
-               BEDTOOLS_GENOMECOV={params.gc_glob}
+               BCFTOOLS_QUERY={params.af_glob}
         
         duckdb {output} -c ".read workflow/scripts/create_variants_db.sql"
         '''
