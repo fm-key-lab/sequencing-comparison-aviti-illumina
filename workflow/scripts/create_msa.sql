@@ -1,5 +1,5 @@
 -- ml duckdb/nightly
--- export MEMORY_LIMIT='110G' NCORES=32 QUAL=30 DP=8 MAF=".95"
+-- export MEMORY_LIMIT='110G' NCORES=32 QUAL=30 STRAND_DP=3 DP=8 MAF=".95"
 -- duckdb /u/thosi/dev/projects/sequencing-comparison-aviti-illumina/dev/compar_snvs_v03.duckdb
 
 set memory_limit = getenv('MEMORY_LIMIT');
@@ -24,8 +24,8 @@ from cmt.candidate_variant_tbl c
 where c.chrom = 'NC_002695.2'
   and c.qual >= cast(getenv('QUAL') as float)
   and c.dp >= cast(getenv('DP') as int)
-  and greatest(ref_af, alt_af) > cast(getenv('MAF') as float)
-  and greatest(least(c.ref_fwd_dp, c.ref_rev_dp), least(c.alt_fwd_dp, c.alt_rev_dp)) >= 3
+  and greatest(ref_af, alt_af) >= cast(getenv('MAF') as float)
+  and greatest(least(c.ref_fwd_dp, c.ref_rev_dp), least(c.alt_fwd_dp, c.alt_rev_dp)) >= cast(getenv('STRAND_DP') as int)
 ;
 
 -- 2. Filter samples by sequence type.

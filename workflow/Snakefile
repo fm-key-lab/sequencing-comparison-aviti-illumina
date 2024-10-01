@@ -40,7 +40,7 @@ EXCLUDE = [75, 76, 821, 822]
 
 rule all:
     input:
-        'results/variants.duckdb'
+        'results/candidate_variants.duckdb'
     localrule: True
     default_target: True
 
@@ -55,6 +55,6 @@ onsuccess:
     shell(f'rsync -au --progress report "/r/t/thosi/{config['run_id']}/"')
 
     # Clean up compiled report
-    shell(f'rm -f "report/main.{config['run_id']}.$(date +"%Y%m%d").pdf"')
     shell(f'touch report/main.pdf')
     shell(f'mv report/main.pdf "report/main.{config['run_id']}.$(date +"%Y%m%d").pdf"')
+    shell(f'rm -f "report/main.pdf"')

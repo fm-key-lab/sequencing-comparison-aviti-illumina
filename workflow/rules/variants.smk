@@ -58,6 +58,7 @@ def candidate_variant_tables(wildcards):
         .apply(
             lambda df: [
                 output_fn.format(**df.to_dict()) for output_fn in [
+                    'results/{species}/variants/{sample}.filtered.vcf.gz',
                     'results/{species}/variants/{sample}_afreq.tsv',
                     'results/{species}/samtools/{sample}_genomecov.tsv'
                 ]
@@ -72,9 +73,9 @@ rule create_variants_db:
     input:
         ancient(candidate_variant_tables)
     params:
-        af_glob="'results/*/variants/*_afreq.tsv'"
+        vcfs="'results/*/variants/*.filtered.vcf.gz'"
     output:
-        'results/variants.duckdb',
+        'results/candidate_variants.duckdb',
     resources:
         cpus_per_task=32,
         mem_mb=96_000,
@@ -84,7 +85,7 @@ rule create_variants_db:
     shell:
         '''
         export MEMORY_LIMIT="$(({resources.mem_mb} / 1200))GB" \
-               BCFTOOLS_QUERY={params.af_glob}
+               FILTERED_VCFS={params.vcfs}
         
         duckdb {output} -c ".read workflow/scripts/create_variants_db.sql"
         '''
