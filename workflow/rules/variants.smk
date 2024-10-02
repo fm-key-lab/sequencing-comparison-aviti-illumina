@@ -19,7 +19,7 @@ rule:
         bcftools view -i 'TYPE="INDEL"' {input} |\
           vcf2parquet -i /dev/stdin convert -o {output[0]}
 
-        bcftools view -i TYPE="SNP"' {input} |\
+        bcftools view -i 'TYPE="SNP"' {input} |\
           vcf2parquet -i /dev/stdin convert -o {output[1]}
 
         bcftools view -e 'TYPE="INDEL"' {input} |\
