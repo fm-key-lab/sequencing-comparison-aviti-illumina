@@ -79,7 +79,7 @@ rule create_variants_db:
     resources:
         cpus_per_task=32,
         mem_mb=96_000,
-        runtime=60
+        runtime=120
     envmodules:
         'duckdb/nightly'
     shell:
