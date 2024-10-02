@@ -75,7 +75,7 @@ rule create_variants_db:
           set threads = {resources.cpus_per_task};
           create table tmp_variants as 
           select species, "sample", chromosome, "position", reference, alternate, quality
-          from read_parquet({params.vcfs}, hive_partitioning = true, hive_types = {'species': varchar, 'sample': usmallint});"
+          from read_parquet({params.vcfs}, hive_partitioning = true, hive_types = {{'species': varchar, 'sample': usmallint}});"
 
         # duckdb {output} -c ".read workflow/scripts/create_variants_db.sql"
         '''
