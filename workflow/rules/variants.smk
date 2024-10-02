@@ -10,19 +10,19 @@ rule:
         )
     resources:
         cpus_per_task=4,
-        runtime=10
+        runtime=5
     envmodules:
         'bcftools/1.20',
         'vcf2parquet/0.4.1'
     shell:
         '''
-        bcftools view -i 'TYPE="INDEL"' {input} |\
+        bcftools view -i 'INFO/INDEL=1' {input} |\
           vcf2parquet -i /dev/stdin convert -o {output[0]}
 
         bcftools view -i 'TYPE="SNP"' {input} |\
           vcf2parquet -i /dev/stdin convert -o {output[1]}
 
-        bcftools view -e 'TYPE="INDEL"' {input} |\
+        bcftools view -e 'INFO/INDEL=1' {input} |\
           vcf2parquet -i /dev/stdin convert -o {output[2]}
         '''
 

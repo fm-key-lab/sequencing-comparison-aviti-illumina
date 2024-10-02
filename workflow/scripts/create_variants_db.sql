@@ -1,3 +1,5 @@
+-- export MEMORY_LIMIT="100GB" VCFS="'/ptmp/thosi/sequencing-comparison-aviti-illumina/results/lake/*/*/nonindels.parquet'"
+
 set memory_limit = getenv('MEMORY_LIMIT');
 set threads = getenv('SLURM_CPUS_PER_TASK');
 
@@ -5,13 +7,47 @@ create type bases as enum ('A', 'C', 'T', 'G', 'N'); -- NOTE: Unused when indels
 
 create type chroms as enum ('NC_002695.2', 'NC_002128.1', 'NC_002127.1');
 
-create type filters as enum ('PASS', 'LowQual');
-
 create type samples as enum (
-    select regexp_extract("file", 'variants/(\d+).filtered.vcf.gz', 1) 
-	-- from glob('results/*/variants/*.filtered.vcf.gz')
-	from glob(getenv('FILTERED_VCFS'))
+    select distinct(regexp_extract("file", '/sample=(\d+)/nonindels.parquet', 1))
+	from glob('/ptmp/thosi/sequencing-comparison-aviti-illumina/results/lake/*/*65*/nonindels.parquet')
 );
+
+create type taxon as enum ('Escherichia_coli');
+
+bcftools view -i 'POS=5295385 & INFO/INDEL=0' /ptmp/thosi/sequencing-comparison-aviti-illumina/results/Escherichia_coli/variants/765.vcf.gz
+
+
+-- indels
+bcftools view -i 'INFO/INDEL=1' /ptmp/thosi/sequencing-comparison-aviti-illumina/results/Escherichia_coli/variants/765.vcf.gz
+
+-- SNPs
+bcftools view -i 'TYPE="SNP"' /ptmp/thosi/sequencing-comparison-aviti-illumina/results/Escherichia_coli/variants/765.vcf.gz
+
+-- non-indels
+bcftools view -e 'INFO/INDEL=1' /ptmp/thosi/sequencing-comparison-aviti-illumina/results/Escherichia_coli/variants/765.vcf.gz
+
+
+
+create temp table test as
+select 
+	species
+	, "sample"
+	, cast(chromosome as chroms) as chromosome
+	, cast("position" as ubigint) as "position"
+	, reference
+	-- , cast(reference as bases) as reference
+	, alternate
+	, quality
+from read_parquet(
+	'/ptmp/thosi/sequencing-comparison-aviti-illumina/results/lake/*/*65*/nonindels.parquet', 
+	hive_partitioning = true, 
+	hive_types = {
+		'species': taxon,
+		'sample': samples
+	}
+);
+
+
 
 drop table if exists raw_vcfs;
 create temp table raw_vcfs as
