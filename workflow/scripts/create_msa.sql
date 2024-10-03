@@ -1,6 +1,251 @@
 -- ml duckdb/nightly
--- export MEMORY_LIMIT='110G' NCORES=32 QUAL=30 STRAND_DP=3 DP=8 MAF=".95"
--- duckdb /u/thosi/dev/projects/sequencing-comparison-aviti-illumina/dev/compar_snvs_v03.duckdb
+-- export MEMORY_LIMIT='100G' NCORES=32 QUAL=30 STRAND_DP=3 DP=8 MAF=".95"
+-- duckdb
+
+set memory_limit = getenv('MEMORY_LIMIT');
+set threads = getenv('SLURM_CPUS_PER_TASK');
+set enable_progress_bar = true;
+
+attach 'results/results.duckdb' as sinfo (read_only);
+attach 'results/candidate_variants.duckdb' as cmt (read_only);
+
+-- 1. Filter samples
+create temp table selected_samples as
+select distinct(s.sample) 
+from sinfo.samplesheet s
+where s.donor = 'B002'
+  and s.sample in (
+    select "sample"
+    from sinfo.sequence_typing_results
+    where st = 73
+);
+
+-- 2. Filter calls
+with filtered_calls as (
+	select 
+		v.sample
+		, v.chromosome
+		, v.position
+		, v.reference
+		, coalesce(v.alternate[1], v.reference) as allele 
+	from variants v
+	where v.chromosome = 'NC_002695.2'
+	  and v.sample in (
+		select "sample" from selected_samples
+	  )
+	  and v.quality >= cast(getenv('QUAL') as float)
+	  and array_reduce(
+	  	  v.info_DP4, (x, y) -> x + y
+	  ) >= cast(getenv('DP') as int)
+	  and list_aggregate(v.info_ADF, 'max') >= cast(getenv('STRAND_DP') as int)
+	  and list_aggregate(v.info_ADR, 'max') >= cast(getenv('STRAND_DP') as int)
+	  and abs(
+		  array_reduce(
+			  v.info_DP4[3:4], (x, y) -> x + y
+		  ) / array_reduce(
+			  v.info_DP4, (x, y) -> x + y
+		  ) - .5
+	  ) >= (cast(getenv('MAF') as float) / 2)
+),
+variable_sites as (
+	select chromosome, "position"
+	from filtered_calls
+	group by chromosome, "position"
+	having count(distinct allele) > 1
+)
+select v.* 
+from variable_sites s
+inner join filtered_calls v
+on s.chromosome = v.chromosome
+and s.position = v.position;
+
+
+
+
+
+-- 1. Filter variants
+create temp table variants as
+select c.sample, c.position
+from cmt.variants c 
+where c.chromosome = 'NC_002695.2'
+  and c.quality >= cast(getenv('QUAL') as float)
+group by c.sample, c.position
+having sum(c.depth) >= cast(getenv('DP') as int)
+   and min(c.depth) >= cast(getenv('STRAND_DP') as int);
+
+-- 2. Filter samples
+create temp table selected_samples as
+select distinct(s.sample) 
+from sinfo.samplesheet s
+where s.donor = 'B002'
+  and s.sample in (
+    select "sample"
+    from sinfo.sequence_typing_results
+    where st = 73
+);
+
+-- Update variants
+create temp table variants as 
+select c.* from cmt.variants c
+where c.sample in (
+    select "sample" from selected_samples
+);
+
+
+-- 2. Filter positions
+create temp table selected_positions as
+
+select * 
+from cmt.variants c 
+where c.chromosome = 'NC_002695.2'
+  and c.quality >= cast(getenv('QUAL') as float)
+  and c.sample in (select "sample" from selected_samples);
+
+select distinct on(c.position)
+    c.sample
+    , c.position
+    , list(distinct c.allele) as allele
+from cmt.variants c 
+where c.chromosome = 'NC_002695.2'
+  and c.quality >= cast(getenv('QUAL') as float)
+  and c.sample in (select "sample" from selected_samples)
+group by c.sample, c.position
+having sum(c.depth) >= cast(getenv('DP') as int)
+   and min(c.depth) >= cast(getenv('STRAND_DP') as int);
+
+
+
+
+
+
+create temp table selected_calls as
+select c.sample, c.position
+    , string_agg(distinct c.allele, ',') as allele
+from cmt.variants c 
+where c.chromosome = 'NC_002695.2'
+  and c.quality >= cast(getenv('QUAL') as float)
+  and c.sample in (select "sample" from selected_samples)
+group by c.sample, c.position
+having sum(c.depth) >= cast(getenv('DP') as int)
+   and min(c.depth) >= cast(getenv('STRAND_DP') as int);
+
+-- 3. Filter out invariant
+with selected_calls_tmp as (
+    select 
+        "sample"
+        , "position"
+        , unnest(allele)
+)
+
+select c.*
+from cmt.variants c 
+where (c.sample, c.position) in (
+    select ("sample", "position") from selected_calls
+);
+
+
+
+
+-- 2. Filter out invariant sites
+create temp table variable_sites as
+select 
+    distinct on(c.chromosome, c.position) c.chromosome, c.position
+from cmt.variants c 
+group by c.chromosome, c.position
+having count(distinct c.allele) > 1;
+
+
+-- 2. Filter positions
+create temp table selected_calls as
+select c.sample, c.position
+from cmt.variants c 
+where c.chromosome = 'NC_002695.2'
+  and c.quality >= cast(getenv('QUAL') as float)
+  and c.sample in (
+    select "sample" from selected_samples
+)
+group by c.sample, c.position
+having sum(depth) >= cast(getenv('DP') as int)
+   and min(depth) >= cast(getenv('STRAND_DP') as int)
+;
+
+-- 3. Update variants
+with filtered_variants as (
+    select "sample", "position", allele
+    from cmt.variants
+    where ("sample", "position") in (
+        select ("sample", "position") from selected_calls
+    )
+),
+invariant_positions as (
+    select "position" from filtered_variants
+    group by "position"
+    having count(distinct allele) > 1
+    and count(distinct "sample") > (
+        select count(distinct "sample") / 2 from filtered_variants
+    )
+)
+
+
+-- 3. Remove invariant positions
+select "sample", "position"
+from (
+    select c.sample, c.position, c.allele
+    from selected_calls s
+    inner join cmt.variants c 
+        on s.sample = c.sample
+       and s.position = c.position
+)
+group by "position"
+having count(distinct allele) > 1
+   and count(distinct "sample") > (
+    select count(distinct "sample") / 2 from selected_calls
+);
+
+
+
+create temp table variable_positions as
+select distinct(c.position)
+from cmt.variants c 
+where c.position in (
+    select "position" from selected_positions
+)
+  and c.sample in (
+    select "sample" from selected_samples
+)
+group by c.position
+having count(distinct c.allele) > 1
+   and count(distinct c.sample) > (
+    select count(distinct "sample") / 2 from selected_samples
+);
+
+-- 4. Filter variants table
+create temp table filtered_variants as
+select c.* from cmt.variants c 
+where c.position in (
+    select "position" from variable_positions
+)
+  and c.sample in (
+    select "sample" from selected_samples
+);
+
+
+
+
+-- X. Create fasta
+
+-- Ensure stdout not polluted
+set enable_progress_bar = false;
+
+
+
+
+
+
+
+
+
+
 
 set memory_limit = getenv('MEMORY_LIMIT');
 set threads = getenv('SLURM_CPUS_PER_TASK');

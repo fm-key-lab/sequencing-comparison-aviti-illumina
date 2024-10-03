@@ -1,3 +1,5 @@
+-- NOTE: Will fail when INDELs are included
+
 set enable_progress_bar = true;
 set memory_limit = getenv('MEMORY_LIMIT');
 set preserve_insertion_order = false;
@@ -5,7 +7,7 @@ set threads = getenv('SLURM_CPUS_PER_TASK');
 
 -- Create ENUM types
 
-create type bases as enum ('A', 'C', 'T', 'G', 'N'); -- NOTE: Unused when indels
+create type bases as enum ('A', 'C', 'T', 'G', 'N');
 
 create type chroms as enum ('NC_002695.2', 'NC_002128.1', 'NC_002127.1');
 
@@ -16,53 +18,33 @@ create type samples as enum (
 
 create type taxon as enum ('Escherichia_coli');
 
-create type orient as enum ('forward', 'reverse');
-
 -- Parse VCF files
 
 create table variants as
-with unnested_tmp as (
-	select	
-		species, "sample", chromosome, "position"
-		, quality
-		, unnest([reference, alternate]) as allele
-		, unnest(info_ADF) as forward
-		, unnest(info_ADR) as reverse
-		, case when unnest(['reference', 'alternate']) = 'alternate' then true else false end as is_alternate
-	from (
-		select 
-			species
-			, "sample"
-			, cast(chromosome as chroms) as chromosome
-			, cast("position" as ubigint) as "position"
-			, cast(reference as bases) as reference
-			, cast(nullif(unnest(alternate), '') as bases) as alternate
-			, cast(quality as decimal(4, 1)) as quality
-			, info_ADF
-			, info_ADR
-		from read_parquet(
-			getenv('VCFS'), 
-			hive_partitioning = true,
-			hive_types = {
-				'species': taxon,
-				'sample': samples
-			}
-		)
-	)
-),
-unpivoted_tmp as (
-	unpivot (
-		select * from unnested_tmp
-		where allele is not null
-	) 
-	on forward, reverse
-	into 
-		name read_orientation
-		value depth	
-)
 select 
-	* exclude(read_orientation, depth)
-	, cast(read_orientation as orient) as read_orientation
-	, cast(depth as usmallint) as depth
-from unpivoted_tmp
-where depth > 0;
+	species
+	, "sample"
+	, cast(chromosome as chroms) as chromosome
+	, cast("position" as ubigint) as "position"
+	, cast(reference as bases) as reference
+	, array_transform(
+		alternate, x -> cast(nullif(x, '') as bases)
+	) as alternate
+	, cast(quality as decimal(4, 1)) as quality
+	, array_transform(
+		info_ADF, x -> cast(x as usmallint)
+	) as info_ADF
+	, array_transform(
+		info_ADR, x -> cast(x as usmallint)
+	) as info_ADR
+	, array_transform(
+		info_DP4, x -> cast(x as usmallint)
+	) as info_DP4
+from read_parquet(
+	getenv('VCFS'), 
+	hive_partitioning = true,
+	hive_types = {
+		'species': taxon,
+		'sample': samples
+	}
+);
