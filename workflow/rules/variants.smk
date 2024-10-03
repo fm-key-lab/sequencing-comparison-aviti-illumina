@@ -62,13 +62,15 @@ rule create_variants_db:
     resources:
         cpus_per_task=32,
         mem_mb=96_000,
-        runtime=120
+        runtime=30
     envmodules:
         'duckdb/nightly'
     shell:
         '''
-        # export MEMORY_LIMIT="$(({resources.mem_mb} / 1200))GB" \
-        #        VCFS={params.vcfs}
+        export MEMORY_LIMIT="$(({resources.mem_mb} / 1200))GB" \
+               VCFS={params.vcfs}
+
+        duckdb {output} -c ".read workflow/scripts/create_variants_db.sql"
 
         duckdb {output} -c \
           "set memory_limit = '$(({resources.mem_mb} / 1200))GB';
