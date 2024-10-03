@@ -56,9 +56,10 @@ rule create_variants_db:
     input:
         ancient(candidate_variant_tables)
     params:
-        vcfs="'results/lake/*/*/nonindels.parquet'"
+        # vcfs="'results/lake/*/*/nonindels.parquet'"
+        vcfs="'results/lake/*/*65*/nonindels.parquet'"
     output:
-        'results/candidate_variants.duckdb',
+        'results/variants.duckdb',
     resources:
         cpus_per_task=32,
         mem_mb=96_000,
@@ -71,13 +72,4 @@ rule create_variants_db:
                VCFS={params.vcfs}
 
         duckdb {output} -c ".read workflow/scripts/create_variants_db.sql"
-
-        duckdb {output} -c \
-          "set memory_limit = '$(({resources.mem_mb} / 1200))GB';
-          set threads = {resources.cpus_per_task};
-          create table tmp_variants as 
-          select species, "sample", chromosome, "position", reference, alternate, quality
-          from read_parquet({params.vcfs}, hive_partitioning = true, hive_types = {{'species': varchar, 'sample': usmallint}});"
-
-        # duckdb {output} -c ".read workflow/scripts/create_variants_db.sql"
         '''
