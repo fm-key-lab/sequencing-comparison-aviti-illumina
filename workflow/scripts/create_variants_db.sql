@@ -20,7 +20,7 @@ create type orient as enum ('forward', 'reverse');
 
 -- Parse VCF files
 
-create temp table variants as
+create table variants as
 with unnested_tmp as (
 	select	
 		species, "sample", chromosome, "position"
