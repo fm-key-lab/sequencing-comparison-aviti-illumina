@@ -56,13 +56,13 @@ rule create_variants_db:
     input:
         ancient(candidate_variant_tables)
     output:
-        'results/variants.duckdb',
+        'results/candidate_variants.duckdb',
     params:
         vcfs="'results/lake/*/*/nonindels.parquet'",
     resources:
         cpus_per_task=32,
         mem_mb=96_000,
-        runtime=120
+        runtime=90
     envmodules:
         'duckdb/nightly'
     shell:

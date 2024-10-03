@@ -24,6 +24,7 @@ create table variants as
 with unnested_tmp as (
 	select	
 		species, "sample", chromosome, "position"
+		, quality
 		, unnest([reference, alternate]) as allele
 		, unnest(info_ADF) as forward
 		, unnest(info_ADR) as reverse
@@ -36,7 +37,7 @@ with unnested_tmp as (
 			, cast("position" as ubigint) as "position"
 			, cast(reference as bases) as reference
 			, cast(nullif(unnest(alternate), '') as bases) as alternate
-			, quality
+			, cast(quality as decimal(4, 1)) as quality
 			, info_ADF
 			, info_ADR
 		from read_parquet(

@@ -40,7 +40,7 @@ EXCLUDE = [75, 76, 821, 822]
 
 rule all:
     input:
-        'results/variants.duckdb'
+        'results/candidate_variants.duckdb'
     localrule: True
     default_target: True
 
