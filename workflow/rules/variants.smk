@@ -55,11 +55,10 @@ def candidate_variant_tables(wildcards):
 rule create_variants_db:
     input:
         ancient(candidate_variant_tables)
-    params:
-        # vcfs="'results/lake/*/*/nonindels.parquet'"
-        vcfs="'results/lake/*/*65*/nonindels.parquet'"
     output:
         'results/variants.duckdb',
+    params:
+        vcfs="'results/lake/*/*/nonindels.parquet'",
     resources:
         cpus_per_task=32,
         mem_mb=96_000,

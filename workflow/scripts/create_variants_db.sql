@@ -1,5 +1,3 @@
--- export MEMORY_LIMIT="100GB" VCFS='/ptmp/thosi/sequencing-comparison-aviti-illumina/results/lake/*/*65*/nonindels.parquet'
-
 set memory_limit = getenv('MEMORY_LIMIT');
 set threads = getenv('SLURM_CPUS_PER_TASK');
 
@@ -59,7 +57,8 @@ unpivoted_tmp as (
 		name read_orientation
 		value depth	
 )
-select * exclude(read_orientation, depth)
+select 
+	* exclude(read_orientation, depth)
 	, cast(read_orientation as orient) as read_orientation
 	, cast(depth as usmallint) as depth
 from unpivoted_tmp
