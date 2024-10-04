@@ -7,7 +7,7 @@
 --  MAF=".95"
 --
 -- Usage:
---  $ export export MEMORY_LIMIT='100G' NCORES=32 QUAL=30 STRAND_DP=10 DP=8 MAF=".95"
+--  $ export MEMORY_LIMIT='100G' NCORES=32 QUAL=30 STRAND_DP=3 DP=8 MAF=".95"
 --  $ duckdb results/candidate_variants.duckdb -c ".read workflow/scripts/parse_variants.sql" > /u/thosi/dev/tmp/variants2.csv
 
 set memory_limit = getenv('MEMORY_LIMIT');

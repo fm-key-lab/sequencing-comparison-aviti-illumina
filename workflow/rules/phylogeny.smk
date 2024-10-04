@@ -1,17 +1,18 @@
 rule pseudogenome_alignment:
     input:
-        'results/variants.duckdb',
+        ancient('results/candidate_variants.duckdb'),
+    output:
+        'results/aligned_pseudogenomes/{species}.variants.csv',
+        'results/aligned_pseudogenomes/{species}.fas',
     params:
         alt=config['variants_thresh']['reads_alt'],
         covg=config['variants_thresh']['coverage'],
         maf=config['variants_thresh']['maf'],
         qual=config['variants_thresh']['qual'],
-    output:
-        'results/aligned_pseudogenomes/{species}.fas',
     resources:
-        cpus_per_task=1,
+        cpus_per_task=16,
         mem_mb=64_000,
-        runtime=30,
+        runtime=15,
     envmodules:
         'duckdb/nightly'
     shell:
@@ -20,9 +21,22 @@ rule pseudogenome_alignment:
                DP={params.covg} \
                MAF={params.maf} \
                QUAL={params.qual} \
+               SPECIES={wildcards.species} \
                STRAND_DP={params.alt}
         
-        duckdb -readonly {input} -c ".read workflow/scripts/finalize_variants.sql" > {output}
+        duckdb -readonly {input} -c ".read workflow/scripts/parse_variants.sql" > {output[0]}
+
+        duckdb {output} -c \
+          "set memory_limit = '$(({resources.mem_mb} / 1100))GB';
+          set threads = {resources.cpus_per_task};
+          set enable_progress_bar = false;
+          copy (
+            select 
+                '>' || ID || '_' || "group" || chr(10) || string_agg(ifnull(allele, 'N'), '')
+            from read_csv('{output[0]}')
+            group by "group", ID
+            order by ID
+          ) to '{output[1]}' (delimiter '', header false, quote '');"
         '''
 
 
