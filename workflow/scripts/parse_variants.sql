@@ -7,8 +7,8 @@
 --  MAF=".95"
 --
 -- Usage:
---  $ export export MEMORY_LIMIT='100G' NCORES=32 QUAL=30 STRAND_DP=3 DP=8 MAF=".95"
---  $ duckdb results/candidate_variants.duckdb -c ".read workflow/scripts/parse_variants.sql" > /u/thosi/dev/tmp/variants.csv
+--  $ export export MEMORY_LIMIT='100G' NCORES=32 QUAL=30 STRAND_DP=10 DP=8 MAF=".95"
+--  $ duckdb results/candidate_variants.duckdb -c ".read workflow/scripts/parse_variants.sql" > /u/thosi/dev/tmp/variants2.csv
 
 set memory_limit = getenv('MEMORY_LIMIT');
 set threads = getenv('SLURM_CPUS_PER_TASK');
@@ -17,6 +17,8 @@ set enable_progress_bar = true;
 attach 'results/results.duckdb' as sinfo (read_only);
 
 -- 1. Filter samples
+.print Filtering samples...
+
 create temp table selected_samples as
 select distinct(s.sample) 
 from sinfo.samplesheet s
@@ -28,6 +30,8 @@ where s.donor = 'B002'
 );
 
 -- 2. Filter calls
+.print Filtering genotype calls...
+
 create temp table filtered_variants as
 with filtered_calls as (
 	select 
@@ -71,6 +75,8 @@ on s.chromosome = v.chromosome
 and s.position = v.position;
 
 -- 3. Annotate samples
+.print Annotating sample data...
+
 create temp table annotated_variants as
 with cartesian_tmp as (
     select * from (
@@ -98,6 +104,8 @@ and c.position = v.position
 and c.reference = v.reference;
 
 -- 4. Final cleaning
+.print Preparing output...
+
 create temp table parsed_variant_tbl as
 select * exclude(allele)
     , ifnull(allele, 'N') as allele
@@ -121,4 +129,6 @@ where ID in (
 );
 
 -- 5. Output
+.print Returning variants.
+
 copy parsed_variant_tbl to '/dev/stdout' (format csv);
