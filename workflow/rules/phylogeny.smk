@@ -26,7 +26,7 @@ rule pseudogenome_alignment:
         
         duckdb -readonly {input} -c ".read workflow/scripts/parse_variants.sql" > {output[0]}
 
-        duckdb {output} -c \
+        duckdb -c \
           "set memory_limit = '$(({resources.mem_mb} / 1100))GB';
           set threads = {resources.cpus_per_task};
           set enable_progress_bar = false;
