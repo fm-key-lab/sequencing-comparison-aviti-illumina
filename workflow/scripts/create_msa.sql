@@ -21,6 +21,7 @@ where s.donor = 'B002'
 );
 
 -- 2. Filter calls
+create temp table filtered_variants as
 with filtered_calls as (
 	select 
 		v.sample
@@ -28,7 +29,7 @@ with filtered_calls as (
 		, v.position
 		, v.reference
 		, coalesce(v.alternate[1], v.reference) as allele 
-	from variants v
+	from cmt.variants v
 	where v.chromosome = 'NC_002695.2'
 	  and v.sample in (
 		select "sample" from selected_samples
@@ -52,12 +53,21 @@ variable_sites as (
 	from filtered_calls
 	group by chromosome, "position"
 	having count(distinct allele) > 1
+       and count(distinct "sample") > (
+        select count(distinct "sample") / 2 from filtered_calls
+       )
 )
 select v.* 
 from variable_sites s
 inner join filtered_calls v
 on s.chromosome = v.chromosome
 and s.position = v.position;
+
+-- X. Create fasta
+
+-- Ensure stdout not polluted
+set enable_progress_bar = false;
+
 
 
 
