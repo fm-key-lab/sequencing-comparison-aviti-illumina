@@ -8,4 +8,4 @@ copy (
     from read_csv('/dev/stdin')
     group by "group", ID
     order by ID
-) to '/dev/stdout' (delimiter '', header false, quote '');"
+) to '/dev/stdout' (delimiter '', header false, quote '');
