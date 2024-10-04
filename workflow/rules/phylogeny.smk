@@ -10,8 +10,8 @@ rule pseudogenome_alignment:
         maf=config['variants_thresh']['maf'],
         qual=config['variants_thresh']['qual'],
     resources:
-        cpus_per_task=16,
-        mem_mb=64_000,
+        cpus_per_task=32,
+        mem_mb=96_000,
         runtime=15,
     envmodules:
         'duckdb/nightly'
