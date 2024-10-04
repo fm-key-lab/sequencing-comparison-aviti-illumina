@@ -22,7 +22,8 @@ attach 'results/results.duckdb' as sinfo (read_only);
 create temp table selected_samples as
 select distinct(s.sample) 
 from sinfo.samplesheet s
-where s.donor = 'B002'
+where s.species = getenv('SPECIES')
+  and s.donor = 'B002'
   and s.sample in (
     select "sample"
     from sinfo.sequence_typing_results
